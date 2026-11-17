@@ -14,24 +14,26 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-            mono: ['"JetBrains Mono"', 'monospace'],
-          },
-          colors: {
-            surface: {
-              950: '#090d16',
-              900: '#0f172a',
-              800: '#1e293b',
-              700: '#334155',
+    if (window.tailwind) {
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+              mono: ['"JetBrains Mono"', 'monospace'],
+            },
+            colors: {
+              surface: {
+                950: '#090d16',
+                900: '#0f172a',
+                800: '#1e293b',
+                700: '#334155',
+              }
             }
           }
         }
-      }
+      };
     }
   </script>
   <style>
@@ -512,7 +514,9 @@
     }
 
     function saveLogs(logs) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
+      } catch (e) {}
       updateUI();
     }
 
@@ -530,7 +534,9 @@
     }
 
     function saveSettingsToStorage(settings) {
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+      try {
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+      } catch (e) {}
       applySettingsToUI();
     }
 
@@ -649,10 +655,12 @@
       }
 
       if (settings.workflowMode === 'log_and_open') {
-        recordAttendance(type);
-        setTimeout(() => {
-          launchPortalUrl(settings.portalUrl, null);
-        }, 350);
+        const saved = recordAttendance(type);
+        if (saved) {
+          setTimeout(() => {
+            launchPortalUrl(settings.portalUrl, null);
+          }, 350);
+        }
         return;
       }
 
@@ -728,14 +736,14 @@
 
       if (type === 'in') {
         if (logs[todayKey].checkIn) {
-          if (!confirm(`Anda sudah Check-In jam ${logs[todayKey].checkIn}. Timpa dengan jam ${nowTime}?`)) return;
+          if (!confirm(`Anda sudah Check-In jam ${logs[todayKey].checkIn}. Timpa dengan jam ${nowTime}?`)) return false;
         }
         logs[todayKey].checkIn = nowTime;
         if (noteText) logs[todayKey].note = noteText;
         showToast(`Check-In tercatat jam ${nowTime}`, 'emerald');
       } else {
         if (logs[todayKey].checkOut) {
-          if (!confirm(`Anda sudah Check-Out jam ${logs[todayKey].checkOut}. Timpa dengan jam ${nowTime}?`)) return;
+          if (!confirm(`Anda sudah Check-Out jam ${logs[todayKey].checkOut}. Timpa dengan jam ${nowTime}?`)) return false;
         }
         logs[todayKey].checkOut = nowTime;
         if (noteText) {
@@ -746,6 +754,7 @@
 
       noteInput.value = '';
       saveLogs(logs);
+      return true;
     }
 
     function updateWidgetStatus() {
@@ -1071,17 +1080,16 @@
     function exportCSV() {
       const logs = getLogs();
       const keys = Object.keys(logs).sort();
-      let csv = 'Tanggal,Hari,Check-In,Check-Out,Status,Catatan
-';
+      const rows = ['Tanggal,Hari,Check-In,Check-Out,Status,Catatan'];
       keys.forEach(k => {
         const item = logs[k];
         const [y, m, d] = k.split('-').map(Number);
         const dayName = HARI_ID[new Date(y, m - 1, d).getDay()];
         const status = (item.checkIn && item.checkOut) ? 'Lengkap' : 'Belum Lengkap';
         const safeNote = `"${(item.note || '').replace(/"/g, '""')}"`;
-        csv += `${k},${dayName},${item.checkIn || '-'},${item.checkOut || '-'},${status},${safeNote}
-`;
+        rows.push(`${k},${dayName},${item.checkIn || '-'},${item.checkOut || '-'},${status},${safeNote}`);
       });
+      const csv = rows.join('\n');
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
