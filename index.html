@@ -121,6 +121,20 @@
       </div>
     </header>
 
+    <!-- Status Pemantauan Tab Web Kantor (Aktif saat menunggu redirect about:blank) -->
+    <div id="portalWatcherBanner" class="hidden animate-banner rounded-2xl bg-emerald-600/15 border border-emerald-400/40 p-3 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping shrink-0"></span>
+        <div class="truncate">
+          <p class="text-xs font-bold text-emerald-200 truncate">Memantau tab absen kantor...</p>
+          <p class="text-[10px] text-emerald-300/80 truncate">Otomatis kembali & catat saat redirect ke about:blank</p>
+        </div>
+      </div>
+      <button onclick="stopPortalWatcher()" class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-800/80 text-slate-300 hover:text-white shrink-0">
+        Batal
+      </button>
+    </div>
+
     <!-- Banner Konfirmasi Otomatis Setelah Kembali dari Web Kantor -->
     <div id="returnConfirmBanner" class="hidden animate-banner rounded-2xl bg-indigo-600/20 border border-indigo-400/40 p-3.5 shadow-lg">
       <div class="flex items-start justify-between gap-3">
@@ -347,25 +361,33 @@
           <label class="block text-slate-300 font-semibold mb-2">Mode Alur Kerja Tombol Utama</label>
           <div class="space-y-2">
             <label class="flex items-start gap-2.5 p-3 rounded-2xl bg-slate-800/70 border border-slate-700/80 cursor-pointer hover:border-indigo-500/50 transition">
-              <input type="radio" name="workflowMode" value="log_and_open" class="mt-0.5 accent-indigo-500" checked />
+              <input type="radio" name="workflowMode" value="auto_on_blank" class="mt-0.5 accent-indigo-500" checked />
               <div>
-                <span class="font-bold text-white block">1. Catat Log & Langsung Buka Web Kantor (Direkomendasikan)</span>
-                <span class="text-[11px] text-slate-400 leading-relaxed block mt-0.5">Saat klik <b>Catat Masuk/Pulang</b>, waktu langsung dicatat permanen lalu tab web absen kantor otomatis terbuka untuk scan wajah.</span>
+                <span class="font-bold text-emerald-300 block">1. Auto-Return & Catat Saat Redirect about:blank (Paling Akurat)</span>
+                <span class="text-[11px] text-slate-400 leading-relaxed block mt-0.5">Membuka web kantor untuk scan wajah. Begitu web kantor selesai & redirect ke <code>about:blank</code>, tab otomatis ditutup, kembali ke Cek Absenku, dan log langsung tercatat!</span>
+              </div>
+            </label>
+
+            <label class="flex items-start gap-2.5 p-3 rounded-2xl bg-slate-800/70 border border-slate-700/80 cursor-pointer hover:border-indigo-500/50 transition">
+              <input type="radio" name="workflowMode" value="log_and_open" class="mt-0.5 accent-indigo-500" />
+              <div>
+                <span class="font-bold text-white block">2. Catat Log Dulu & Langsung Buka Web Kantor</span>
+                <span class="text-[11px] text-slate-400 leading-relaxed block mt-0.5">Saat klik <b>Catat Masuk/Pulang</b>, waktu langsung dicatat permanen lalu tab web absen kantor terbuka. Jika redirect ke <code>about:blank</code>, tab otomatis ditutup kembali ke sini.</span>
               </div>
             </label>
 
             <label class="flex items-start gap-2.5 p-3 rounded-2xl bg-slate-800/70 border border-slate-700/80 cursor-pointer hover:border-indigo-500/50 transition">
               <input type="radio" name="workflowMode" value="open_then_confirm" class="mt-0.5 accent-indigo-500" />
               <div>
-                <span class="font-bold text-white block">2. Buka Web Kantor Dulu, Konfirmasi Setelah Scan</span>
-                <span class="text-[11px] text-slate-400 leading-relaxed block mt-0.5">Membuka web absen kantor lebih dulu. Begitu Anda kembali ke aplikasi ini setelah scan wajah, muncul tombol konfirmasi 1-ketuk.</span>
+                <span class="font-bold text-white block">3. Buka Web Kantor Dulu, Konfirmasi Manual Setelah Scan</span>
+                <span class="text-[11px] text-slate-400 leading-relaxed block mt-0.5">Membuka web absen kantor lebih dulu. Saat kembali ke aplikasi ini, muncul banner konfirmasi 1-ketuk untuk menyimpan log.</span>
               </div>
             </label>
 
             <label class="flex items-start gap-2.5 p-3 rounded-2xl bg-slate-800/70 border border-slate-700/80 cursor-pointer hover:border-indigo-500/50 transition">
               <input type="radio" name="workflowMode" value="separate_shortcut" class="mt-0.5 accent-indigo-500" />
               <div>
-                <span class="font-bold text-white block">3. Shortcut Terpisah di Atas Widget</span>
+                <span class="font-bold text-white block">4. Shortcut Terpisah di Atas Widget</span>
                 <span class="text-[11px] text-slate-400 leading-relaxed block mt-0.5">Tombol Catat Masuk/Pulang hanya menyimpan log lokal, sementara web kantor dibuka lewat tombol shortcut khusus di atas widget.</span>
               </div>
             </label>
@@ -496,6 +518,8 @@
     const SETTINGS_KEY = 'cek_absenku_portal_settings_v1';
 
     let pendingPortalAction = null;
+    let portalPopupRef = null;
+    let portalPollTimer = null;
 
     const HARI_ID = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
     const BULAN_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
@@ -526,10 +550,10 @@
         return raw ? JSON.parse(raw) : {
           portalName: '',
           portalUrl: '',
-          workflowMode: 'log_and_open'
+          workflowMode: 'auto_on_blank'
         };
       } catch (e) {
-        return { portalName: '', portalUrl: '', workflowMode: 'log_and_open' };
+        return { portalName: '', portalUrl: '', workflowMode: 'auto_on_blank' };
       }
     }
 
@@ -570,7 +594,7 @@
       clearTimeout(window._toastTimer);
       window._toastTimer = setTimeout(() => {
         toast.classList.add('opacity-0', 'translate-y-3');
-      }, 2800);
+      }, 3200);
     }
 
     function updateClock() {
@@ -593,7 +617,10 @@
         document.getElementById('portalLabelDisplay').textContent = settings.portalName || 'Portal Absen Kantor';
         document.getElementById('portalUrlDisplay').textContent = settings.portalUrl;
 
-        if (settings.workflowMode === 'log_and_open') {
+        if (settings.workflowMode === 'auto_on_blank') {
+          btnInSub.textContent = 'Scan → Auto Catat';
+          btnOutSub.textContent = 'Scan → Auto Catat';
+        } else if (settings.workflowMode === 'log_and_open') {
           btnInSub.textContent = 'Catat & Buka Web Kantor';
           btnOutSub.textContent = 'Catat & Buka Web Kantor';
         } else if (settings.workflowMode === 'open_then_confirm') {
@@ -620,14 +647,104 @@
       return clean;
     }
 
-    function launchPortalUrl(url, actionType = null) {
+    function stopPortalWatcher() {
+      if (portalPollTimer) {
+        clearInterval(portalPollTimer);
+        portalPollTimer = null;
+      }
+      document.getElementById('portalWatcherBanner').classList.add('hidden');
+    }
+
+    // Membuka tab web absen kantor TANPA 'noopener' agar status about:blank & close bisa dipantau
+    function launchPortalUrl(url, actionType = null, autoLogOnBlank = false) {
       const validUrl = normalizeUrl(url);
       if (!validUrl) return;
+
+      stopPortalWatcher();
+      dismissReturnBanner();
+
       pendingPortalAction = {
         type: actionType,
+        autoLogOnBlank: autoLogOnBlank,
         launchedAt: Date.now()
       };
-      window.open(validUrl, '_blank', 'noopener');
+
+      // Buka tanpa 'noopener' agar window.opener & pengecekan about:blank bekerja
+      portalPopupRef = window.open(validUrl, '_blank');
+
+      if (!portalPopupRef) {
+        showToast('Popup diblokir browser. Izinkan popup untuk situs ini.', 'amber');
+        return;
+      }
+
+      document.getElementById('portalWatcherBanner').classList.remove('hidden');
+
+      let hasLeftInitialBlank = false;
+      const startTime = Date.now();
+
+      portalPollTimer = setInterval(() => {
+        // Batas pemantauan maksimal 10 menit
+        if (Date.now() - startTime > 600000) {
+          stopPortalWatcher();
+          return;
+        }
+
+        // 1. Cek jika tab web kantor ditutup
+        if (portalPopupRef.closed) {
+          handlePortalFinished('Tab web kantor ditutup');
+          return;
+        }
+
+        // 2. Cek apakah tab sedang berada di domain kantor (cross-origin) atau sudah redirect kembali ke about:blank (same-origin)
+        try {
+          const currentHref = portalPopupRef.location.href;
+          // Jika tidak melempar SecurityError, artinya tab berada di same-origin atau about:blank!
+          if (currentHref === 'about:blank' || currentHref === '') {
+            // Pastikan tab sempat memuat halaman kantor dulu (minimal 1.5 detik setelah dibuka atau sudah pernah cross-origin)
+            if (hasLeftInitialBlank || (Date.now() - startTime > 1500)) {
+              try {
+                portalPopupRef.close();
+              } catch (closeErr) {}
+              try {
+                window.focus();
+              } catch (focusErr) {}
+              handlePortalFinished('Redirect about:blank terdeteksi');
+            }
+          }
+        } catch (crossOriginErr) {
+          // SecurityError normal terjadi saat tab sedang membuka halaman web absen kantor (beda domain)
+          hasLeftInitialBlank = true;
+        }
+      }, 450);
+    }
+
+    function handlePortalFinished(reasonText) {
+      stopPortalWatcher();
+      if (!pendingPortalAction) return;
+
+      const { type, autoLogOnBlank } = pendingPortalAction;
+      pendingPortalAction = null;
+
+      if (!type) {
+        showToast('Kembali dari web absen kantor', 'indigo');
+        return;
+      }
+
+      const logs = getLogs();
+      const todayKey = getLocalDateKey();
+      const todayLog = logs[todayKey] || {};
+      const alreadyLogged = (type === 'in' && todayLog.checkIn) || (type === 'out' && todayLog.checkOut);
+
+      if (alreadyLogged) {
+        showToast(`Kembali ke Cek Absenku (${type === 'in' ? 'Check-In' : 'Check-Out'} sudah tercatat)`, 'emerald');
+        return;
+      }
+
+      if (autoLogOnBlank) {
+        recordAttendance(type, true);
+      } else {
+        showReturnBanner(type);
+      }
     }
 
     function openPortalDirectly() {
@@ -640,8 +757,9 @@
       const todayKey = getLocalDateKey();
       const todayLog = logs[todayKey] || {};
       const suggestedType = !todayLog.checkIn ? 'in' : (!todayLog.checkOut ? 'out' : null);
+      const autoLog = settings.workflowMode === 'auto_on_blank';
 
-      launchPortalUrl(settings.portalUrl, suggestedType);
+      launchPortalUrl(settings.portalUrl, suggestedType, autoLog);
       showToast('Membuka web absen kantor...', 'indigo');
     }
 
@@ -654,31 +772,49 @@
         return;
       }
 
+      if (settings.workflowMode === 'auto_on_blank') {
+        launchPortalUrl(settings.portalUrl, type, true);
+        showToast('Silakan scan wajah. Otomatis kembali & tercatat setelah redirect.', 'indigo');
+        return;
+      }
+
       if (settings.workflowMode === 'log_and_open') {
         const saved = recordAttendance(type);
         if (saved) {
           setTimeout(() => {
-            launchPortalUrl(settings.portalUrl, null);
+            launchPortalUrl(settings.portalUrl, null, false);
           }, 350);
         }
         return;
       }
 
       if (settings.workflowMode === 'open_then_confirm') {
-        launchPortalUrl(settings.portalUrl, type);
-        showToast('Membuka web absen kantor. Kembali ke sini setelah scan wajah.', 'indigo');
+        launchPortalUrl(settings.portalUrl, type, false);
+        showToast('Membuka web absen kantor...', 'indigo');
       }
     }
 
+    // Fallback jika user berpindah tab secara manual lewat switcher HP Android
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible' && pendingPortalAction) {
         const elapsed = Date.now() - pendingPortalAction.launchedAt;
-        if (elapsed > 2000 && pendingPortalAction.type) {
+        if (elapsed > 2500 && pendingPortalAction.type) {
+          // Cek sekilas apakah popup sudah berada di about:blank
+          if (portalPopupRef && !portalPopupRef.closed) {
+            try {
+              const href = portalPopupRef.location.href;
+              if (href === 'about:blank' || href === '') {
+                try { portalPopupRef.close(); } catch (e) {}
+                handlePortalFinished('Redirect about:blank terdeteksi');
+                return;
+              }
+            } catch (e) {}
+          }
+
           const logs = getLogs();
           const todayKey = getLocalDateKey();
           const todayLog = logs[todayKey] || {};
           const type = pendingPortalAction.type;
-
           const alreadyLogged = (type === 'in' && todayLog.checkIn) || (type === 'out' && todayLog.checkOut);
           if (!alreadyLogged) {
             showReturnBanner(type);
@@ -718,7 +854,7 @@
       pendingPortalAction = null;
     }
 
-    function recordAttendance(type) {
+    function recordAttendance(type, isAuto = false) {
       const logs = getLogs();
       const todayKey = getLocalDateKey();
       const nowTime = getCurrentTimeStr();
@@ -735,21 +871,21 @@
       }
 
       if (type === 'in') {
-        if (logs[todayKey].checkIn) {
+        if (logs[todayKey].checkIn && !isAuto) {
           if (!confirm(`Anda sudah Check-In jam ${logs[todayKey].checkIn}. Timpa dengan jam ${nowTime}?`)) return false;
         }
         logs[todayKey].checkIn = nowTime;
         if (noteText) logs[todayKey].note = noteText;
-        showToast(`Check-In tercatat jam ${nowTime}`, 'emerald');
+        showToast(isAuto ? `Auto-Log: Check-In tercatat jam ${nowTime}` : `Check-In tercatat jam ${nowTime}`, 'emerald');
       } else {
-        if (logs[todayKey].checkOut) {
+        if (logs[todayKey].checkOut && !isAuto) {
           if (!confirm(`Anda sudah Check-Out jam ${logs[todayKey].checkOut}. Timpa dengan jam ${nowTime}?`)) return false;
         }
         logs[todayKey].checkOut = nowTime;
         if (noteText) {
           logs[todayKey].note = logs[todayKey].note ? `${logs[todayKey].note} • ${noteText}` : noteText;
         }
-        showToast(`Check-Out tercatat jam ${nowTime}`, 'sky');
+        showToast(isAuto ? `Auto-Log: Check-Out tercatat jam ${nowTime}` : `Check-Out tercatat jam ${nowTime}`, 'sky');
       }
 
       noteInput.value = '';
@@ -810,7 +946,7 @@
         badge.className = 'text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300';
         badge.textContent = 'BELUM ABSEN';
         headline.textContent = 'Belum ada Check-In hari ini';
-        subtext.textContent = 'Segera klik Catat Masuk setelah scan wajah';
+        subtext.textContent = 'Segera lakukan absen agar tidak kena SP';
         glow.className = 'absolute -top-16 -right-16 w-44 h-44 rounded-full bg-amber-500/15 blur-3xl pointer-events-none';
       } else if (todayLog.checkIn && !todayLog.checkOut) {
         banner.className = 'rounded-2xl p-4 mb-4 border transition-all duration-300 bg-emerald-500/10 border-emerald-500/30';
@@ -932,7 +1068,7 @@
       document.getElementById('settingPortalUrl').value = settings.portalUrl || '';
       const radios = document.querySelectorAll('input[name="workflowMode"]');
       radios.forEach(r => {
-        r.checked = (r.value === (settings.workflowMode || 'log_and_open'));
+        r.checked = (r.value === (settings.workflowMode || 'auto_on_blank'));
       });
       document.getElementById('settingsModal').classList.remove('hidden');
     }
@@ -940,7 +1076,7 @@
     function savePortalSettings() {
       const portalName = document.getElementById('settingPortalName').value.trim();
       const rawUrl = document.getElementById('settingPortalUrl').value.trim();
-      const selectedMode = document.querySelector('input[name="workflowMode"]:checked')?.value || 'log_and_open';
+      const selectedMode = document.querySelector('input[name="workflowMode"]:checked')?.value || 'auto_on_blank';
 
       const normalized = rawUrl ? normalizeUrl(rawUrl) : '';
 
@@ -960,7 +1096,7 @@
       saveSettingsToStorage({
         portalName: '',
         portalUrl: '',
-        workflowMode: 'log_and_open'
+        workflowMode: 'auto_on_blank'
       });
       closeModal('settingsModal');
       showToast('Integrasi web kantor direset', 'amber');
@@ -1089,7 +1225,8 @@
         const safeNote = `"${(item.note || '').replace(/"/g, '""')}"`;
         rows.push(`${k},${dayName},${item.checkIn || '-'},${item.checkOut || '-'},${status},${safeNote}`);
       });
-      const csv = rows.join('\n');
+      const csv = rows.join('
+');
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
