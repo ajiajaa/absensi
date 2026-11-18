@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>Cek Absenku — Log Absensi & Integrasi Portal Kantor</title>
+  <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Cek%20Absenku%22%2C%22short_name%22%3A%22Cek%20Absen%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23090d16%22%2C%22theme_color%22%3A%22%23090d16%22%7D" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <script>
+    if (window.tailwind) {
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+              mono: ['"JetBrains Mono"', 'monospace'],
+            },
+            colors: {
+              surface: {
+                950: '#090d16',
+                900: '#0f172a',
+                800: '#1e293b',
+                700: '#334155',
+              }
+            }
+          }
+        }
+      };
+    }
+  </script>
+  <style>
+    body {
+      background-color: #090d16;
+      color: #f8fafc;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .widget-card {
+      background: linear-gradient(145deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+    }
+    .btn-press:active {
+      transform: scale(0.97);
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.7; }
+      50% { transform: scale(1.05); opacity: 0.3; }
+      100% { transform: scale(0.95); opacity: 0.7; }
+    }
+    .animate-ring {
+      animation: pulse-ring 2.5s infinite ease-in-out;
+    }
+    @keyframes slide-down {
+      0% { opacity: 0; transform: translateY(-10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .animate-banner {
+      animation: slide-down 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-start py-4 px-4 sm:py-8">
+
+  <!-- Container Utama (Lebar Maksimal Mobile Widget) -->
+  <main class="w-full max-w-md space-y-4 pb-16">
+
+    <!-- Header Bar -->
+    <header class="flex items-center justify-between px-1">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-2xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-400">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-base font-bold tracking-tight text-white leading-none">Cek Absenku</h1>
+          <p class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>
+            Log Permanen Lokal
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1.5">
+        <button onclick="openSettingsModal()" id="btnSettings" title="Pengaturan Web Kantor" class="relative p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 border border-slate-700/60 transition btn-press">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <span id="settingsDot" class="hidden absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-indigo-500 border-2 border-surface-950"></span>
+        </button>
+
+        <button onclick="openInstallModal()" title="Pasang sebagai Widget HP" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 border border-slate-700/60 transition btn-press">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+        </button>
+
+        <button onclick="openBackupModal()" title="Backup & Restore Data" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 border border-slate-700/60 transition btn-press">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Banner Konfirmasi Otomatis Setelah Kembali dari Web Kantor -->
+    <div id="returnConfirmBanner" class="hidden animate-banner rounded-2xl bg-indigo-600/20 border border-indigo-400/40 p-3.5 shadow-lg">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-start gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-indigo-500/30 text-indigo-300 flex items-center justify-center shrink-0 mt-0.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-xs font-bold text-white" id="returnBannerTitle">Baru selesai face scan di web kantor?</p>
+            <p class="text-[11px] text-indigo-200/80 mt-0.5" id="returnBannerDesc">Klik tombol di bawah agar log langsung tersimpan permanen.</p>
+          </div>
+        </div>
+        <button onclick="dismissReturnBanner()" class="text-slate-400 hover:text-white p-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="mt-3 flex gap-2">
+        <button id="btnConfirmReturnAction" onclick="confirmReturnLog()" class="flex-1 py-2 px-3 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-xs transition btn-press">
+          Ya, Simpan Log Sekarang
+        </button>
+        <button onclick="dismissReturnBanner()" class="py-2 px-3 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition">
+          Belum
+        </button>
+      </div>
+    </div>
+
+    <!-- Bar Shortcut Web Kantor (Tampil jika URL diatur) -->
+    <div id="portalShortcutBar" class="hidden rounded-2xl bg-slate-900/90 border border-slate-800 px-3.5 py-2.5 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="w-2 h-2 rounded-full bg-indigo-400 shrink-0"></span>
+        <div class="truncate">
+          <p class="text-[11px] font-bold text-slate-200 truncate" id="portalLabelDisplay">Web Absen Kantor</p>
+          <p class="text-[10px] text-slate-400 font-mono truncate" id="portalUrlDisplay">https://...</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button onclick="openPortalDirectly()" class="px-2.5 py-1.5 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-400/30 text-indigo-300 text-[11px] font-bold flex items-center gap-1 transition btn-press">
+          <span>Buka Web</span>
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ANDROID WIDGET UTAMA (Status Hari Ini) -->
+    <section class="widget-card rounded-[28px] p-5 relative overflow-hidden">
+      <div id="widgetGlow" class="absolute -top-16 -right-16 w-44 h-44 rounded-full bg-amber-500/15 blur-3xl pointer-events-none transition-colors duration-500"></div>
+
+      <!-- Tanggal & Jam Real-Time -->
+      <div class="flex items-start justify-between mb-4">
+        <div>
+          <span id="todayDayName" class="text-xs font-semibold uppercase tracking-wider text-indigo-400">Hari Ini</span>
+          <h2 id="todayDateText" class="text-lg font-bold text-white mt-0.5">--</h2>
+        </div>
+        <div class="text-right">
+          <div id="liveClock" class="font-mono text-xl font-bold text-white tracking-tight">--:--:--</div>
+          <span class="text-[10px] font-medium text-slate-400 uppercase tracking-widest">WIB / Lokal</span>
+        </div>
+      </div>
+
+      <!-- Status Banner Besar -->
+      <div id="statusBanner" class="rounded-2xl p-4 mb-4 border transition-all duration-300 bg-amber-500/10 border-amber-500/30">
+        <div class="flex items-center gap-3.5">
+          <div id="statusIconWrapper" class="relative w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 bg-amber-500/20 text-amber-400">
+            <span id="statusPulse" class="absolute inset-0 rounded-2xl bg-amber-400/20 animate-ring"></span>
+            <svg id="statusIcon" class="w-6 h-6 relative z-10" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <span id="statusBadge" class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300">
+                BELUM ABSEN
+              </span>
+            </div>
+            <p id="statusHeadline" class="text-sm font-bold text-white mt-1 truncate">Belum ada Check-In hari ini</p>
+            <p id="statusSubtext" class="text-xs text-slate-300/80 mt-0.5">Segera lakukan absen agar tidak kena SP</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ringkasan Jam Masuk & Pulang Hari Ini -->
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div class="rounded-2xl bg-slate-900/90 border border-slate-800 p-3 flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-semibold text-slate-400">CHECK-IN</span>
+            <span id="inCheckIcon" class="w-2 h-2 rounded-full bg-slate-600"></span>
+          </div>
+          <div class="mt-1.5 flex items-baseline justify-between">
+            <span id="todayInTime" class="font-mono text-lg font-bold text-slate-500">--:--</span>
+            <button id="editInBtn" onclick="openEditModal('in')" class="hidden text-[11px] text-indigo-400 hover:underline font-medium">Ubah</button>
+          </div>
+        </div>
+
+        <div class="rounded-2xl bg-slate-900/90 border border-slate-800 p-3 flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-semibold text-slate-400">CHECK-OUT</span>
+            <span id="outCheckIcon" class="w-2 h-2 rounded-full bg-slate-600"></span>
+          </div>
+          <div class="mt-1.5 flex items-baseline justify-between">
+            <span id="todayOutTime" class="font-mono text-lg font-bold text-slate-500">--:--</span>
+            <button id="editOutBtn" onclick="openEditModal('out')" class="hidden text-[11px] text-indigo-400 hover:underline font-medium">Ubah</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tombol Aksi Utama (1-Tap) -->
+      <div class="grid grid-cols-2 gap-3">
+        <button id="btnCheckIn" onclick="handleAttendanceAction('in')" class="btn-press py-3.5 px-4 rounded-2xl font-bold text-sm flex flex-col items-center justify-center gap-0.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20 transition cursor-pointer">
+          <div class="flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+            </svg>
+            <span id="btnCheckInLabel">Catat Masuk</span>
+          </div>
+          <span id="btnCheckInSub" class="text-[10px] font-semibold opacity-80">Simpan Log Sekarang</span>
+        </button>
+
+        <button id="btnCheckOut" onclick="handleAttendanceAction('out')" class="btn-press py-3.5 px-4 rounded-2xl font-bold text-sm flex flex-col items-center justify-center gap-0.5 bg-sky-500 hover:bg-sky-400 text-slate-950 shadow-lg shadow-sky-500/20 transition cursor-pointer">
+          <div class="flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span id="btnCheckOutLabel">Catat Pulang</span>
+          </div>
+          <span id="btnCheckOutSub" class="text-[10px] font-semibold opacity-80">Simpan Log Sekarang</span>
+        </button>
+      </div>
+
+      <!-- Catatan Opsional Cepat -->
+      <div class="mt-3 flex items-center gap-2">
+        <input id="quickNoteInput" type="text" placeholder="Catatan opsional (misal: WFO, scan wajah sukses)..." class="w-full bg-slate-900/70 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition" />
+      </div>
+    </section>
+
+    <!-- Statistik Singkat Bulan Ini -->
+    <section class="grid grid-cols-3 gap-2.5">
+      <div class="widget-card rounded-2xl p-3 text-center">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Hadir Bulan Ini</span>
+        <p id="statTotalDays" class="font-mono text-lg font-bold text-white mt-0.5">0</p>
+      </div>
+      <div class="widget-card rounded-2xl p-3 text-center">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Lengkap (In+Out)</span>
+        <p id="statCompleteDays" class="font-mono text-lg font-bold text-emerald-400 mt-0.5">0</p>
+      </div>
+      <div class="widget-card rounded-2xl p-3 text-center">
+        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Lupa Out</span>
+        <p id="statMissingOut" class="font-mono text-lg font-bold text-amber-400 mt-0.5">0</p>
+      </div>
+    </section>
+
+    <!-- Riwayat Log Permanen -->
+    <section class="widget-card rounded-[26px] p-4">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <h3 class="text-sm font-bold text-white">Riwayat Log Permanen</h3>
+          <p class="text-[11px] text-slate-400">Tersimpan otomatis di memori perangkat</p>
+        </div>
+        <button onclick="openManualAddModal()" class="text-xs font-semibold px-2.5 py-1.5 rounded-xl bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/25 transition btn-press">
+          + Tambah Manual
+        </button>
+      </div>
+
+      <!-- Filter Bulan -->
+      <div class="flex items-center gap-2 mb-3 overflow-x-auto no-scrollbar pb-1">
+        <input type="month" id="filterMonth" onchange="renderLogs()" class="bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500" />
+        <button onclick="resetFilter()" class="text-[11px] font-medium px-2.5 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 shrink-0">
+          Semua Log
+        </button>
+      </div>
+
+      <!-- Daftar Log -->
+      <div id="logListContainer" class="space-y-2.5 max-h-[380px] overflow-y-auto no-scrollbar pr-0.5">
+        <!-- Item log dirender via JS -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast Notifikasi -->
+  <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-all duration-300 translate-y-3">
+    <div class="bg-slate-800 border border-slate-700 text-white px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-2 text-xs font-semibold whitespace-nowrap">
+      <span id="toastDot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
+      <span id="toastMessage">Log tersimpan</span>
+    </div>
+  </div>
+
+  <!-- MODAL PENGATURAN WEB ABSEN KANTOR -->
+  <div id="settingsModal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md p-5 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white">Integrasi Web Absen Kantor</h3>
+            <p class="text-[11px] text-slate-400">Hubungkan widget dengan portal scan wajah kantor</p>
+          </div>
+        </div>
+        <button onclick="closeModal('settingsModal')" class="text-slate-400 hover:text-white p-1">✕</button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Nama Portal / Kantor</label>
+          <input type="text" id="settingPortalName" placeholder="Contoh: Portal HRIS / Absen Kantor" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500" />
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">URL Web Absen Kantor <span class="text-rose-400">*</span></label>
+          <input type="url" id="settingPortalUrl" placeholder="https://absen.kantorku.co.id" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-white font-mono text-xs placeholder-slate-500 focus:outline-none focus:border-indigo-500" />
+          <p class="text-[10px] text-slate-400 mt-1">Masukkan link halaman login / check-in browser yang biasa dibuka saat scan wajah.</p>
+        </div>
+
+        <div class="pt-1">
+          <label class="block text-slate-300 font-semibold mb-2">Mode Alur Kerja Tombol Utama</label>
+          <div class="space-y-2">
+            <label class="flex items-start gap-2.5 p-3 rounded-2xl bg-slate-800/70 border border-slate-700/80 cursor-pointer hover:border-indigo-500/50 transition">
+              <input type="radio" name="workflowMode" value="log_and_open" class="mt-0.5 accent-indigo-500" checked />
+              <div>
+                <span class="font-bold text-white block">1. Catat Log & Langsung Buka Web Kantor (Direkomendasikan)</span>
+                <span class="text-[11px] text-slate-400 leading-relaxed block mt-0.5">Saat klik <b>Catat Masuk/Pulang</b>, waktu langsung dicatat permanen lalu tab web absen kantor otomatis terbuka untuk scan wajah.</span>
+              </div>
+            </label>
+
+            <label class="flex items-start gap-2.5 p-3 rounded-2xl bg-slate-800/70 border border-slate-700/80 cursor-pointer hover:border-indigo-500/50 transition">
+              <input type="radio" name="workflowMode" value="open_then_confirm" class="mt-0.5 accent-indigo-500" />
+              <div>
+                <span class="font-bold text-white block">2. Buka Web Kantor Dulu, Konfirmasi Setelah Scan</span>
+                <span class="text-[11px] text-slate-400 leading-relaxed block mt-0.5">Membuka web absen kantor lebih dulu. Begitu Anda kembali ke aplikasi ini setelah scan wajah, muncul tombol konfirmasi 1-ketuk.</span>
+              </div>
+            </label>
+
+            <label class="flex items-start gap-2.5 p-3 rounded-2xl bg-slate-800/70 border border-slate-700/80 cursor-pointer hover:border-indigo-500/50 transition">
+              <input type="radio" name="workflowMode" value="separate_shortcut" class="mt-0.5 accent-indigo-500" />
+              <div>
+                <span class="font-bold text-white block">3. Shortcut Terpisah di Atas Widget</span>
+                <span class="text-[11px] text-slate-400 leading-relaxed block mt-0.5">Tombol Catat Masuk/Pulang hanya menyimpan log lokal, sementara web kantor dibuka lewat tombol shortcut khusus di atas widget.</span>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button onclick="clearPortalSettings()" class="py-2.5 px-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 font-semibold text-xs hover:bg-rose-500/20">
+          Reset URL
+        </button>
+        <button onclick="savePortalSettings()" class="flex-1 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-xs shadow-lg shadow-indigo-500/20 btn-press">
+          Simpan Pengaturan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL EDIT JAM ABSEN -->
+  <div id="editModal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md p-5 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 id="editModalTitle" class="text-base font-bold text-white">Ubah Waktu Absen</h3>
+        <button onclick="closeModal('editModal')" class="text-slate-400 hover:text-white p-1">✕</button>
+      </div>
+      <input type="hidden" id="editDateKey" />
+      <input type="hidden" id="editType" />
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Jam (HH:MM:SS)</label>
+          <input type="time" step="1" id="editTimeInput" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white font-mono" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Catatan</label>
+          <input type="text" id="editNoteInput" placeholder="Keterangan tambahan..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white" />
+        </div>
+      </div>
+      <div class="flex gap-2 pt-2">
+        <button onclick="deleteSpecificPunch()" class="flex-1 py-2.5 rounded-xl bg-rose-500/15 text-rose-400 border border-rose-500/30 font-semibold text-xs">Hapus Jam Ini</button>
+        <button onclick="saveEditedTime()" class="flex-1 py-2.5 rounded-xl bg-indigo-500 text-white font-bold text-xs">Simpan Perubahan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL TAMBAH LOG MANUAL -->
+  <div id="manualAddModal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md p-5 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white">Tambah Log Susulan</h3>
+        <button onclick="closeModal('manualAddModal')" class="text-slate-400 hover:text-white p-1">✕</button>
+      </div>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Tanggal</label>
+          <input type="date" id="manualDate" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white" />
+        </div>
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1">Jam Check-In</label>
+            <input type="time" step="1" id="manualIn" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1">Jam Check-Out</label>
+            <input type="time" step="1" id="manualOut" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Catatan</label>
+          <input type="text" id="manualNote" placeholder="Contoh: Lupa klik catat tapi sudah scan wajah" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white" />
+        </div>
+      </div>
+      <button onclick="saveManualLog()" class="w-full py-3 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-xs">Simpan Log Permanen</button>
+    </div>
+  </div>
+
+  <!-- MODAL CARA PASANG WIDGET DI ANDROID -->
+  <div id="installModal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md p-5 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white">Pasang di Layar Utama Android</h3>
+        <button onclick="closeModal('installModal')" class="text-slate-400 hover:text-white p-1">✕</button>
+      </div>
+      <div class="space-y-3 text-xs text-slate-300 leading-relaxed">
+        <div class="p-3 rounded-2xl bg-slate-800/80 border border-slate-700/70 space-y-2">
+          <p class="font-bold text-indigo-300">Langkah di Google Chrome Android:</p>
+          <ol class="list-decimal list-inside space-y-1.5 text-slate-300">
+            <li>Ketuk ikon <b>titik tiga (⋮)</b> di pojok kanan atas browser Chrome.</li>
+            <li>Pilih menu <b>"Tambahkan ke Layar utama"</b> (<i>Add to Home screen</i>) atau <b>"Instal aplikasi"</b>.</li>
+            <li>Beri nama <b>Cek Absen</b> lalu ketuk <b>Tambahkan</b>.</li>
+            <li>Taruh ikonnya tepat di samping ikon browser absen kantor Anda agar selalu terlihat setiap buka HP!</li>
+          </ol>
+        </div>
+        <p class="text-[11px] text-slate-400">
+          *Data disimpan menggunakan <b>Persistent LocalStorage</b> browser HP Anda. Selama cache situs tidak dihapus manual, log akan tersimpan selamanya.
+        </p>
+      </div>
+      <button onclick="closeModal('installModal')" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs">Mengerti</button>
+    </div>
+  </div>
+
+  <!-- MODAL BACKUP & RESTORE -->
+  <div id="backupModal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md p-5 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white">Cadangkan & Pulihkan Data</h3>
+        <button onclick="closeModal('backupModal')" class="text-slate-400 hover:text-white p-1">✕</button>
+      </div>
+      <p class="text-xs text-slate-400 leading-relaxed">
+        Ekspor log absensi ke file JSON atau CSV (Excel) sebagai bukti cadangan permanen jika sewaktu-waktu Anda ganti HP.
+      </p>
+      <div class="grid grid-cols-2 gap-2.5">
+        <button onclick="exportJSON()" class="py-3 px-3 rounded-xl bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 font-bold text-xs hover:bg-indigo-500/30">
+          Ekspor Cadangan (.JSON)
+        </button>
+        <button onclick="exportCSV()" class="py-3 px-3 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold text-xs hover:bg-emerald-500/30">
+          Unduh Laporan (.CSV)
+        </button>
+      </div>
+      <div class="pt-2 border-t border-slate-800">
+        <label class="block text-xs font-semibold text-slate-300 mb-2">Pulihkan dari File Cadangan (.JSON)</label>
+        <input type="file" id="importFileInput" accept=".json" onchange="importJSON(event)" class="block w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700" />
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'cek_absenku_permanent_logs_v1';
+    const SETTINGS_KEY = 'cek_absenku_portal_settings_v1';
+
+    let pendingPortalAction = null;
+
+    const HARI_ID = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const BULAN_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().catch(() => {});
+    }
+
+    function getLogs() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function saveLogs(logs) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
+      } catch (e) {}
+      updateUI();
+    }
+
+    function getSettings() {
+      try {
+        const raw = localStorage.getItem(SETTINGS_KEY);
+        return raw ? JSON.parse(raw) : {
+          portalName: '',
+          portalUrl: '',
+          workflowMode: 'log_and_open'
+        };
+      } catch (e) {
+        return { portalName: '', portalUrl: '', workflowMode: 'log_and_open' };
+      }
+    }
+
+    function saveSettingsToStorage(settings) {
+      try {
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+      } catch (e) {}
+      applySettingsToUI();
+    }
+
+    function getLocalDateKey(dateObj = new Date()) {
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const d = String(dateObj.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function getCurrentTimeStr(dateObj = new Date()) {
+      const h = String(dateObj.getHours()).padStart(2, '0');
+      const m = String(dateObj.getMinutes()).padStart(2, '0');
+      const s = String(dateObj.getSeconds()).padStart(2, '0');
+      return `${h}:${m}:${s}`;
+    }
+
+    function formatDisplayDate(dateKey) {
+      const [y, m, d] = dateKey.split('-').map(Number);
+      const dt = new Date(y, m - 1, d);
+      return `${HARI_ID[dt.getDay()]}, ${d} ${BULAN_ID[m - 1]} ${y}`;
+    }
+
+    function showToast(msg, color = 'emerald') {
+      const toast = document.getElementById('toast');
+      const dot = document.getElementById('toastDot');
+      const text = document.getElementById('toastMessage');
+      text.textContent = msg;
+      dot.className = `w-2 h-2 rounded-full ${color === 'amber' ? 'bg-amber-400' : color === 'sky' ? 'bg-sky-400' : color === 'indigo' ? 'bg-indigo-400' : 'bg-emerald-400'}`;
+      toast.classList.remove('opacity-0', 'translate-y-3');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-3');
+      }, 2800);
+    }
+
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('liveClock').textContent = getCurrentTimeStr(now);
+      document.getElementById('todayDayName').textContent = HARI_ID[now.getDay()];
+      document.getElementById('todayDateText').textContent = `${now.getDate()} ${BULAN_ID[now.getMonth()]} ${now.getFullYear()}`;
+    }
+
+    function applySettingsToUI() {
+      const settings = getSettings();
+      const shortcutBar = document.getElementById('portalShortcutBar');
+      const settingsDot = document.getElementById('settingsDot');
+      const btnInSub = document.getElementById('btnCheckInSub');
+      const btnOutSub = document.getElementById('btnCheckOutSub');
+
+      if (settings.portalUrl && settings.portalUrl.trim() !== '') {
+        shortcutBar.classList.remove('hidden');
+        settingsDot.classList.remove('hidden');
+        document.getElementById('portalLabelDisplay').textContent = settings.portalName || 'Portal Absen Kantor';
+        document.getElementById('portalUrlDisplay').textContent = settings.portalUrl;
+
+        if (settings.workflowMode === 'log_and_open') {
+          btnInSub.textContent = 'Catat & Buka Web Kantor';
+          btnOutSub.textContent = 'Catat & Buka Web Kantor';
+        } else if (settings.workflowMode === 'open_then_confirm') {
+          btnInSub.textContent = 'Buka Web → Konfirmasi';
+          btnOutSub.textContent = 'Buka Web → Konfirmasi';
+        } else {
+          btnInSub.textContent = 'Simpan Log Lokal';
+          btnOutSub.textContent = 'Simpan Log Lokal';
+        }
+      } else {
+        shortcutBar.classList.add('hidden');
+        settingsDot.classList.add('hidden');
+        btnInSub.textContent = 'Simpan Log Sekarang';
+        btnOutSub.textContent = 'Simpan Log Sekarang';
+      }
+    }
+
+    function normalizeUrl(url) {
+      let clean = url.trim();
+      if (!clean) return '';
+      if (!/^https?:\/\//i.test(clean)) {
+        clean = 'https://' + clean;
+      }
+      return clean;
+    }
+
+    function launchPortalUrl(url, actionType = null) {
+      const validUrl = normalizeUrl(url);
+      if (!validUrl) return;
+      pendingPortalAction = {
+        type: actionType,
+        launchedAt: Date.now()
+      };
+      window.open(validUrl, '_blank', 'noopener');
+    }
+
+    function openPortalDirectly() {
+      const settings = getSettings();
+      if (!settings.portalUrl) {
+        openSettingsModal();
+        return;
+      }
+      const logs = getLogs();
+      const todayKey = getLocalDateKey();
+      const todayLog = logs[todayKey] || {};
+      const suggestedType = !todayLog.checkIn ? 'in' : (!todayLog.checkOut ? 'out' : null);
+
+      launchPortalUrl(settings.portalUrl, suggestedType);
+      showToast('Membuka web absen kantor...', 'indigo');
+    }
+
+    function handleAttendanceAction(type) {
+      const settings = getSettings();
+      const hasPortal = settings.portalUrl && settings.portalUrl.trim() !== '';
+
+      if (!hasPortal || settings.workflowMode === 'separate_shortcut') {
+        recordAttendance(type);
+        return;
+      }
+
+      if (settings.workflowMode === 'log_and_open') {
+        const saved = recordAttendance(type);
+        if (saved) {
+          setTimeout(() => {
+            launchPortalUrl(settings.portalUrl, null);
+          }, 350);
+        }
+        return;
+      }
+
+      if (settings.workflowMode === 'open_then_confirm') {
+        launchPortalUrl(settings.portalUrl, type);
+        showToast('Membuka web absen kantor. Kembali ke sini setelah scan wajah.', 'indigo');
+      }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && pendingPortalAction) {
+        const elapsed = Date.now() - pendingPortalAction.launchedAt;
+        if (elapsed > 2000 && pendingPortalAction.type) {
+          const logs = getLogs();
+          const todayKey = getLocalDateKey();
+          const todayLog = logs[todayKey] || {};
+          const type = pendingPortalAction.type;
+
+          const alreadyLogged = (type === 'in' && todayLog.checkIn) || (type === 'out' && todayLog.checkOut);
+          if (!alreadyLogged) {
+            showReturnBanner(type);
+          }
+        }
+      }
+    });
+
+    function showReturnBanner(type) {
+      const banner = document.getElementById('returnConfirmBanner');
+      const title = document.getElementById('returnBannerTitle');
+      const desc = document.getElementById('returnBannerDesc');
+      const btn = document.getElementById('btnConfirmReturnAction');
+
+      banner.dataset.pendingType = type;
+      if (type === 'in') {
+        title.textContent = 'Baru selesai Check-In di web kantor?';
+        desc.textContent = 'Klik tombol di bawah untuk mencatat jam Check-In sekarang.';
+        btn.textContent = 'Ya, Catat Check-In Sekarang';
+      } else {
+        title.textContent = 'Baru selesai Check-Out di web kantor?';
+        desc.textContent = 'Klik tombol di bawah untuk mencatat jam Check-Out sekarang.';
+        btn.textContent = 'Ya, Catat Check-Out Sekarang';
+      }
+      banner.classList.remove('hidden');
+    }
+
+    function confirmReturnLog() {
+      const banner = document.getElementById('returnConfirmBanner');
+      const type = banner.dataset.pendingType || 'in';
+      recordAttendance(type);
+      dismissReturnBanner();
+    }
+
+    function dismissReturnBanner() {
+      document.getElementById('returnConfirmBanner').classList.add('hidden');
+      pendingPortalAction = null;
+    }
+
+    function recordAttendance(type) {
+      const logs = getLogs();
+      const todayKey = getLocalDateKey();
+      const nowTime = getCurrentTimeStr();
+      const noteInput = document.getElementById('quickNoteInput');
+      const noteText = noteInput.value.trim();
+
+      if (!logs[todayKey]) {
+        logs[todayKey] = {
+          date: todayKey,
+          checkIn: null,
+          checkOut: null,
+          note: ''
+        };
+      }
+
+      if (type === 'in') {
+        if (logs[todayKey].checkIn) {
+          if (!confirm(`Anda sudah Check-In jam ${logs[todayKey].checkIn}. Timpa dengan jam ${nowTime}?`)) return false;
+        }
+        logs[todayKey].checkIn = nowTime;
+        if (noteText) logs[todayKey].note = noteText;
+        showToast(`Check-In tercatat jam ${nowTime}`, 'emerald');
+      } else {
+        if (logs[todayKey].checkOut) {
+          if (!confirm(`Anda sudah Check-Out jam ${logs[todayKey].checkOut}. Timpa dengan jam ${nowTime}?`)) return false;
+        }
+        logs[todayKey].checkOut = nowTime;
+        if (noteText) {
+          logs[todayKey].note = logs[todayKey].note ? `${logs[todayKey].note} • ${noteText}` : noteText;
+        }
+        showToast(`Check-Out tercatat jam ${nowTime}`, 'sky');
+      }
+
+      noteInput.value = '';
+      saveLogs(logs);
+      return true;
+    }
+
+    function updateWidgetStatus() {
+      const logs = getLogs();
+      const todayKey = getLocalDateKey();
+      const todayLog = logs[todayKey];
+
+      const banner = document.getElementById('statusBanner');
+      const iconWrap = document.getElementById('statusIconWrapper');
+      const pulse = document.getElementById('statusPulse');
+      const icon = document.getElementById('statusIcon');
+      const badge = document.getElementById('statusBadge');
+      const headline = document.getElementById('statusHeadline');
+      const subtext = document.getElementById('statusSubtext');
+      const glow = document.getElementById('widgetGlow');
+
+      const inTimeEl = document.getElementById('todayInTime');
+      const outTimeEl = document.getElementById('todayOutTime');
+      const inDot = document.getElementById('inCheckIcon');
+      const outDot = document.getElementById('outCheckIcon');
+      const editInBtn = document.getElementById('editInBtn');
+      const editOutBtn = document.getElementById('editOutBtn');
+
+      if (todayLog && todayLog.checkIn) {
+        inTimeEl.textContent = todayLog.checkIn.slice(0, 5);
+        inTimeEl.className = 'font-mono text-lg font-bold text-emerald-400';
+        inDot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+        editInBtn.classList.remove('hidden');
+      } else {
+        inTimeEl.textContent = '--:--';
+        inTimeEl.className = 'font-mono text-lg font-bold text-slate-500';
+        inDot.className = 'w-2 h-2 rounded-full bg-slate-600';
+        editInBtn.classList.add('hidden');
+      }
+
+      if (todayLog && todayLog.checkOut) {
+        outTimeEl.textContent = todayLog.checkOut.slice(0, 5);
+        outTimeEl.className = 'font-mono text-lg font-bold text-sky-400';
+        outDot.className = 'w-2 h-2 rounded-full bg-sky-400';
+        editOutBtn.classList.remove('hidden');
+      } else {
+        outTimeEl.textContent = '--:--';
+        outTimeEl.className = 'font-mono text-lg font-bold text-slate-500';
+        outDot.className = 'w-2 h-2 rounded-full bg-slate-600';
+        editOutBtn.classList.add('hidden');
+      }
+
+      if (!todayLog || (!todayLog.checkIn && !todayLog.checkOut)) {
+        banner.className = 'rounded-2xl p-4 mb-4 border transition-all duration-300 bg-amber-500/10 border-amber-500/30';
+        iconWrap.className = 'relative w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 bg-amber-500/20 text-amber-400';
+        pulse.classList.remove('hidden');
+        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />';
+        badge.className = 'text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300';
+        badge.textContent = 'BELUM ABSEN';
+        headline.textContent = 'Belum ada Check-In hari ini';
+        subtext.textContent = 'Segera klik Catat Masuk setelah scan wajah';
+        glow.className = 'absolute -top-16 -right-16 w-44 h-44 rounded-full bg-amber-500/15 blur-3xl pointer-events-none';
+      } else if (todayLog.checkIn && !todayLog.checkOut) {
+        banner.className = 'rounded-2xl p-4 mb-4 border transition-all duration-300 bg-emerald-500/10 border-emerald-500/30';
+        iconWrap.className = 'relative w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 bg-emerald-500/20 text-emerald-400';
+        pulse.classList.add('hidden');
+        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />';
+        badge.className = 'text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300';
+        badge.textContent = 'SUDAH CHECK-IN';
+        headline.textContent = `Masuk tercatat pukul ${todayLog.checkIn.slice(0, 5)}`;
+        subtext.textContent = 'Jangan lupa catat Check-Out saat pulang nanti';
+        glow.className = 'absolute -top-16 -right-16 w-44 h-44 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none';
+      } else if (todayLog.checkIn && todayLog.checkOut) {
+        banner.className = 'rounded-2xl p-4 mb-4 border transition-all duration-300 bg-sky-500/10 border-sky-500/30';
+        iconWrap.className = 'relative w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 bg-sky-500/20 text-sky-400';
+        pulse.classList.add('hidden');
+        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />';
+        badge.className = 'text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300';
+        badge.textContent = 'ABSEN HARI INI LENGKAP';
+        headline.textContent = `In ${todayLog.checkIn.slice(0, 5)} • Out ${todayLog.checkOut.slice(0, 5)}`;
+        subtext.textContent = 'Aman! Log masuk & pulang sudah tersimpan permanen';
+        glow.className = 'absolute -top-16 -right-16 w-44 h-44 rounded-full bg-sky-500/15 blur-3xl pointer-events-none';
+      } else {
+        banner.className = 'rounded-2xl p-4 mb-4 border transition-all duration-300 bg-indigo-500/10 border-indigo-500/30';
+        iconWrap.className = 'relative w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 bg-indigo-500/20 text-indigo-400';
+        pulse.classList.add('hidden');
+        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />';
+        badge.className = 'text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300';
+        badge.textContent = 'CHECK-IN KOSONG';
+        headline.textContent = `Check-Out pukul ${todayLog.checkOut.slice(0, 5)} (In belum dicatat)`;
+        subtext.textContent = 'Klik Catat Masuk atau Ubah jika tadi sudah Check-In';
+      }
+    }
+
+    function updateStats() {
+      const logs = getLogs();
+      const currentMonthPrefix = getLocalDateKey().slice(0, 7);
+      let total = 0;
+      let complete = 0;
+      let missingOut = 0;
+
+      Object.values(logs).forEach(item => {
+        if (item.date && item.date.startsWith(currentMonthPrefix)) {
+          if (item.checkIn || item.checkOut) total++;
+          if (item.checkIn && item.checkOut) complete++;
+          if (item.checkIn && !item.checkOut && item.date !== getLocalDateKey()) missingOut++;
+        }
+      });
+
+      document.getElementById('statTotalDays').textContent = total;
+      document.getElementById('statCompleteDays').textContent = complete;
+      document.getElementById('statMissingOut').textContent = missingOut;
+    }
+
+    function renderLogs() {
+      const logs = getLogs();
+      const container = document.getElementById('logListContainer');
+      const filterMonth = document.getElementById('filterMonth').value;
+
+      const sortedKeys = Object.keys(logs)
+        .filter(k => !filterMonth || k.startsWith(filterMonth))
+        .sort((a, b) => b.localeCompare(a));
+
+      if (sortedKeys.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 px-4 rounded-2xl bg-slate-900/50 border border-dashed border-slate-800">
+            <p class="text-xs font-semibold text-slate-400">Belum ada catatan absensi pada periode ini.</p>
+            <p class="text-[11px] text-slate-500 mt-1">Setiap kali Anda mencatat absen, riwayat akan terkunci permanen di sini.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = sortedKeys.map(dateKey => {
+        const item = logs[dateKey];
+        const isToday = dateKey === getLocalDateKey();
+        const isComplete = item.checkIn && item.checkOut;
+
+        return `
+          <div class="rounded-2xl bg-slate-900/90 border ${isToday ? 'border-indigo-500/40' : 'border-slate-800'} p-3.5 transition">
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-bold text-white">${formatDisplayDate(dateKey)}</span>
+                ${isToday ? '<span class="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300">Hari Ini</span>' : ''}
+              </div>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isComplete ? 'bg-emerald-500/15 text-emerald-400' : 'bg-amber-500/15 text-amber-300'}">
+                ${isComplete ? 'Lengkap' : 'Belum Lengkap'}
+              </span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div onclick="openEditModalForDate('${dateKey}', 'in')" class="cursor-pointer rounded-xl bg-slate-950/70 hover:bg-slate-800/80 px-3 py-2 flex items-center justify-between border border-slate-800/80">
+                <span class="text-slate-400 text-[11px]">Masuk</span>
+                <span class="font-mono font-bold ${item.checkIn ? 'text-emerald-400' : 'text-slate-600'}">${item.checkIn ? item.checkIn.slice(0, 5) : '--:--'}</span>
+              </div>
+              <div onclick="openEditModalForDate('${dateKey}', 'out')" class="cursor-pointer rounded-xl bg-slate-950/70 hover:bg-slate-800/80 px-3 py-2 flex items-center justify-between border border-slate-800/80">
+                <span class="text-slate-400 text-[11px]">Pulang</span>
+                <span class="font-mono font-bold ${item.checkOut ? 'text-sky-400' : 'text-slate-600'}">${item.checkOut ? item.checkOut.slice(0, 5) : '--:--'}</span>
+              </div>
+            </div>
+
+            ${item.note ? `<p class="mt-2 text-[11px] text-slate-400 bg-slate-950/50 rounded-lg px-2.5 py-1.5 border border-slate-800/50">📝 ${escapeHtml(item.note)}</p>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+    }
+
+    function resetFilter() {
+      document.getElementById('filterMonth').value = '';
+      renderLogs();
+    }
+
+    function openSettingsModal() {
+      const settings = getSettings();
+      document.getElementById('settingPortalName').value = settings.portalName || '';
+      document.getElementById('settingPortalUrl').value = settings.portalUrl || '';
+      const radios = document.querySelectorAll('input[name="workflowMode"]');
+      radios.forEach(r => {
+        r.checked = (r.value === (settings.workflowMode || 'log_and_open'));
+      });
+      document.getElementById('settingsModal').classList.remove('hidden');
+    }
+
+    function savePortalSettings() {
+      const portalName = document.getElementById('settingPortalName').value.trim();
+      const rawUrl = document.getElementById('settingPortalUrl').value.trim();
+      const selectedMode = document.querySelector('input[name="workflowMode"]:checked')?.value || 'log_and_open';
+
+      const normalized = rawUrl ? normalizeUrl(rawUrl) : '';
+
+      saveSettingsToStorage({
+        portalName: portalName || 'Web Absen Kantor',
+        portalUrl: normalized,
+        workflowMode: selectedMode
+      });
+
+      closeModal('settingsModal');
+      showToast(normalized ? 'Pengaturan web absen disimpan' : 'URL web absen dikosongkan', 'indigo');
+    }
+
+    function clearPortalSettings() {
+      document.getElementById('settingPortalName').value = '';
+      document.getElementById('settingPortalUrl').value = '';
+      saveSettingsToStorage({
+        portalName: '',
+        portalUrl: '',
+        workflowMode: 'log_and_open'
+      });
+      closeModal('settingsModal');
+      showToast('Integrasi web kantor direset', 'amber');
+    }
+
+    function openEditModal(type) {
+      openEditModalForDate(getLocalDateKey(), type);
+    }
+
+    function openEditModalForDate(dateKey, type) {
+      const logs = getLogs();
+      const item = logs[dateKey] || { date: dateKey, checkIn: '', checkOut: '', note: '' };
+      document.getElementById('editDateKey').value = dateKey;
+      document.getElementById('editType').value = type;
+      document.getElementById('editModalTitle').textContent = `Ubah ${type === 'in' ? 'Check-In' : 'Check-Out'} (${dateKey})`;
+      document.getElementById('editTimeInput').value = type === 'in' ? (item.checkIn || '08:00:00') : (item.checkOut || '17:00:00');
+      document.getElementById('editNoteInput').value = item.note || '';
+      document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    function saveEditedTime() {
+      const dateKey = document.getElementById('editDateKey').value;
+      const type = document.getElementById('editType').value;
+      let timeVal = document.getElementById('editTimeInput').value;
+      const noteVal = document.getElementById('editNoteInput').value.trim();
+
+      if (!timeVal) return alert('Pilih jam terlebih dahulu');
+      if (timeVal.length === 5) timeVal += ':00';
+
+      const logs = getLogs();
+      if (!logs[dateKey]) logs[dateKey] = { date: dateKey, checkIn: null, checkOut: null, note: '' };
+
+      if (type === 'in') logs[dateKey].checkIn = timeVal;
+      else logs[dateKey].checkOut = timeVal;
+      logs[dateKey].note = noteVal;
+
+      saveLogs(logs);
+      closeModal('editModal');
+      showToast('Perubahan waktu disimpan');
+    }
+
+    function deleteSpecificPunch() {
+      const dateKey = document.getElementById('editDateKey').value;
+      const type = document.getElementById('editType').value;
+      const logs = getLogs();
+      if (logs[dateKey]) {
+        if (type === 'in') logs[dateKey].checkIn = null;
+        else logs[dateKey].checkOut = null;
+        if (!logs[dateKey].checkIn && !logs[dateKey].checkOut) {
+          delete logs[dateKey];
+        }
+        saveLogs(logs);
+      }
+      closeModal('editModal');
+      showToast('Data jam dihapus', 'amber');
+    }
+
+    function openManualAddModal() {
+      document.getElementById('manualDate').value = getLocalDateKey();
+      document.getElementById('manualIn').value = '08:00:00';
+      document.getElementById('manualOut').value = '';
+      document.getElementById('manualNote').value = '';
+      document.getElementById('manualAddModal').classList.remove('hidden');
+    }
+
+    function saveManualLog() {
+      const dateKey = document.getElementById('manualDate').value;
+      let inVal = document.getElementById('manualIn').value;
+      let outVal = document.getElementById('manualOut').value;
+      const noteVal = document.getElementById('manualNote').value.trim();
+
+      if (!dateKey) return alert('Tanggal wajib diisi');
+      if (!inVal && !outVal) return alert('Isi minimal jam Check-In atau Check-Out');
+
+      if (inVal && inVal.length === 5) inVal += ':00';
+      if (outVal && outVal.length === 5) outVal += ':00';
+
+      const logs = getLogs();
+      logs[dateKey] = {
+        date: dateKey,
+        checkIn: inVal || null,
+        checkOut: outVal || null,
+        note: noteVal
+      };
+      saveLogs(logs);
+      closeModal('manualAddModal');
+      showToast(`Log ${dateKey} berhasil ditambahkan`);
+    }
+
+    function openInstallModal() {
+      document.getElementById('installModal').classList.remove('hidden');
+    }
+
+    function openBackupModal() {
+      document.getElementById('backupModal').classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function exportJSON() {
+      const dataStr = JSON.stringify({
+        logs: getLogs(),
+        settings: getSettings()
+      }, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `backup-cek-absenku-${getLocalDateKey()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('File backup JSON diunduh');
+    }
+
+    function exportCSV() {
+      const logs = getLogs();
+      const keys = Object.keys(logs).sort();
+      const rows = ['Tanggal,Hari,Check-In,Check-Out,Status,Catatan'];
+      keys.forEach(k => {
+        const item = logs[k];
+        const [y, m, d] = k.split('-').map(Number);
+        const dayName = HARI_ID[new Date(y, m - 1, d).getDay()];
+        const status = (item.checkIn && item.checkOut) ? 'Lengkap' : 'Belum Lengkap';
+        const safeNote = `"${(item.note || '').replace(/"/g, '""')}"`;
+        rows.push(`${k},${dayName},${item.checkIn || '-'},${item.checkOut || '-'},${status},${safeNote}`);
+      });
+      const csv = rows.join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `laporan-absensi-${getLocalDateKey()}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Laporan CSV diunduh');
+    }
+
+    function importJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          const importedLogs = parsed.logs ? parsed.logs : parsed;
+          if (typeof importedLogs === 'object' && importedLogs !== null) {
+            const merged = { ...getLogs(), ...importedLogs };
+            saveLogs(merged);
+            if (parsed.settings && parsed.settings.portalUrl) {
+              saveSettingsToStorage(parsed.settings);
+            }
+            closeModal('backupModal');
+            showToast('Data berhasil dipulihkan & digabung');
+          } else {
+            alert('Format file tidak valid');
+          }
+        } catch (err) {
+          alert('Gagal membaca file JSON');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function updateUI() {
+      updateWidgetStatus();
+      updateStats();
+      renderLogs();
+    }
+
+    document.getElementById('filterMonth').value = getLocalDateKey().slice(0, 7);
+    updateClock();
+    setInterval(updateClock, 1000);
+    applySettingsToUI();
+    updateUI();
+  </script>
+</body>
+</html>
