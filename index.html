@@ -655,7 +655,27 @@
       document.getElementById('portalWatcherBanner').classList.add('hidden');
     }
 
-    // Membuka tab web absen kantor TANPA 'noopener' agar status about:blank & close bisa dipantau
+    const PENDING_SESSION_KEY = 'cek_absenku_pending_action_v1';
+
+    function setPendingSession(data) {
+      pendingPortalAction = data;
+      try {
+        if (data) sessionStorage.setItem(PENDING_SESSION_KEY, JSON.stringify(data));
+        else sessionStorage.removeItem(PENDING_SESSION_KEY);
+      } catch (e) {}
+    }
+
+    function getPendingSession() {
+      if (pendingPortalAction) return pendingPortalAction;
+      try {
+        const raw = sessionStorage.getItem(PENDING_SESSION_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // Membuka tab web absen kantor dengan pemantauan yang kompatibel dengan Chrome Android
     function launchPortalUrl(url, actionType = null, autoLogOnBlank = false) {
       const validUrl = normalizeUrl(url);
       if (!validUrl) return;
@@ -663,67 +683,60 @@
       stopPortalWatcher();
       dismissReturnBanner();
 
-      pendingPortalAction = {
+      setPendingSession({
         type: actionType,
         autoLogOnBlank: autoLogOnBlank,
         launchedAt: Date.now()
-      };
+      });
 
-      // Buka tanpa 'noopener' agar window.opener & pengecekan about:blank bekerja
       portalPopupRef = window.open(validUrl, '_blank');
 
       if (!portalPopupRef) {
-        showToast('Popup diblokir browser. Izinkan popup untuk situs ini.', 'amber');
+        showToast('Popup diblokir Chrome. Ketuk "Selalu tampilkan" lalu coba lagi.', 'amber');
         return;
       }
 
-      document.getElementById('portalWatcherBanner').classList.remove('hidden');
+      const watcherBanner = document.getElementById('portalWatcherBanner');
+      watcherBanner.querySelector('p.text-xs').textContent = 'Web absen terbuka — tekan Back (◀) jika muncul about:blank';
+      watcherBanner.querySelector('p.text-\[10px\]').textContent = 'Log otomatis tercatat begitu Anda kembali ke layar ini';
+      watcherBanner.classList.remove('hidden');
 
       let hasLeftInitialBlank = false;
       const startTime = Date.now();
 
       portalPollTimer = setInterval(() => {
-        // Batas pemantauan maksimal 10 menit
         if (Date.now() - startTime > 600000) {
           stopPortalWatcher();
           return;
         }
 
-        // 1. Cek jika tab web kantor ditutup
-        if (portalPopupRef.closed) {
+        if (!portalPopupRef || portalPopupRef.closed) {
           handlePortalFinished('Tab web kantor ditutup');
           return;
         }
 
-        // 2. Cek apakah tab sedang berada di domain kantor (cross-origin) atau sudah redirect kembali ke about:blank (same-origin)
         try {
           const currentHref = portalPopupRef.location.href;
-          // Jika tidak melempar SecurityError, artinya tab berada di same-origin atau about:blank!
           if (currentHref === 'about:blank' || currentHref === '') {
-            // Pastikan tab sempat memuat halaman kantor dulu (minimal 1.5 detik setelah dibuka atau sudah pernah cross-origin)
-            if (hasLeftInitialBlank || (Date.now() - startTime > 1500)) {
-              try {
-                portalPopupRef.close();
-              } catch (closeErr) {}
-              try {
-                window.focus();
-              } catch (focusErr) {}
+            if (hasLeftInitialBlank || (Date.now() - startTime > 2000)) {
+              try { portalPopupRef.close(); } catch (e) {}
+              try { window.focus(); } catch (e) {}
               handlePortalFinished('Redirect about:blank terdeteksi');
             }
           }
         } catch (crossOriginErr) {
-          // SecurityError normal terjadi saat tab sedang membuka halaman web absen kantor (beda domain)
           hasLeftInitialBlank = true;
         }
-      }, 450);
+      }, 500);
     }
 
     function handlePortalFinished(reasonText) {
       stopPortalWatcher();
-      if (!pendingPortalAction) return;
+      const action = getPendingSession();
+      if (!action) return;
 
-      const { type, autoLogOnBlank } = pendingPortalAction;
-      pendingPortalAction = null;
+      const { type, autoLogOnBlank } = action;
+      setPendingSession(null);
 
       if (!type) {
         showToast('Kembali dari web absen kantor', 'indigo');
@@ -794,33 +807,62 @@
       }
     }
 
-    // Fallback jika user berpindah tab secara manual lewat switcher HP Android
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible' && pendingPortalAction) {
-        const elapsed = Date.now() - pendingPortalAction.launchedAt;
-        if (elapsed > 2500 && pendingPortalAction.type) {
-          // Cek sekilas apakah popup sudah berada di about:blank
-          if (portalPopupRef && !portalPopupRef.closed) {
-            try {
-              const href = portalPopupRef.location.href;
-              if (href === 'about:blank' || href === '') {
-                try { portalPopupRef.close(); } catch (e) {}
-                handlePortalFinished('Redirect about:blank terdeteksi');
-                return;
-              }
-            } catch (e) {}
-          }
+    function onReturnToApp() {
+      const action = getPendingSession();
+      if (!action) return;
 
-          const logs = getLogs();
-          const todayKey = getLocalDateKey();
-          const todayLog = logs[todayKey] || {};
-          const type = pendingPortalAction.type;
-          const alreadyLogged = (type === 'in' && todayLog.checkIn) || (type === 'out' && todayLog.checkOut);
-          if (!alreadyLogged) {
-            showReturnBanner(type);
+      const elapsed = Date.now() - action.launchedAt;
+      if (elapsed < 1800) return;
+
+      // Coba tutup tab about:blank jika masih terbuka di latar belakang
+      if (portalPopupRef && !portalPopupRef.closed) {
+        try {
+          const href = portalPopupRef.location.href;
+          if (href === 'about:blank' || href === '') {
+            try { portalPopupRef.close(); } catch (e) {}
           }
-        }
+        } catch (e) {}
       }
+
+      if (!action.type) {
+        stopPortalWatcher();
+        setPendingSession(null);
+        return;
+      }
+
+      const logs = getLogs();
+      const todayKey = getLocalDateKey();
+      const todayLog = logs[todayKey] || {};
+      const alreadyLogged = (action.type === 'in' && todayLog.checkIn) || (action.type === 'out' && todayLog.checkOut);
+
+      if (alreadyLogged) {
+        stopPortalWatcher();
+        setPendingSession(null);
+        return;
+      }
+
+      // Di Chrome Android, saat user menekan tombol Back (◀) dari halaman about:blank kembali ke Cek Absenku,
+      // jika mode auto_on_blank aktif, langsung catat log secara otomatis!
+      if (action.autoLogOnBlank) {
+        handlePortalFinished('Kembali dari web absen kantor');
+      } else {
+        stopPortalWatcher();
+        showReturnBanner(action.type);
+      }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        onReturnToApp();
+      }
+    });
+
+    window.addEventListener('focus', () => {
+      onReturnToApp();
+    });
+
+    window.addEventListener('pageshow', () => {
+      onReturnToApp();
     });
 
     function showReturnBanner(type) {
@@ -851,7 +893,7 @@
 
     function dismissReturnBanner() {
       document.getElementById('returnConfirmBanner').classList.add('hidden');
-      pendingPortalAction = null;
+      setPendingSession(null);
     }
 
     function recordAttendance(type, isAuto = false) {
