@@ -1225,8 +1225,7 @@
         const safeNote = `"${(item.note || '').replace(/"/g, '""')}"`;
         rows.push(`${k},${dayName},${item.checkIn || '-'},${item.checkOut || '-'},${status},${safeNote}`);
       });
-      const csv = rows.join('
-');
+      const csv = rows.join(String.fromCharCode(10));
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
