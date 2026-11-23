@@ -143,8 +143,6 @@
       min-height: 100vh;
       min-height: 100dvh;
       background-color: var(--bg-base);
-      background-image: var(--wallpaper);
-      background-attachment: fixed;
       line-height: 1.4;
       -webkit-font-smoothing: antialiased;
       display: flex;
@@ -152,6 +150,56 @@
       padding: max(18px, env(safe-area-inset-top)) 16px max(72px, env(safe-area-inset-bottom));
       overscroll-behavior-y: none;
       overflow-x: hidden;
+      transition: color 0.35s ease, background-color 0.55s ease;
+    }
+
+    /* Smooth Dual Wallpaper Cross-Fade Behind Shattering Glass */
+    .bg-wallpaper {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      pointer-events: none;
+      background-image:
+        radial-gradient(circle at 12% 8%, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0) 42%),
+        radial-gradient(circle at 88% 14%, rgba(169, 206, 244, 0.85) 0%, rgba(169, 206, 244, 0) 46%),
+        radial-gradient(circle at 82% 76%, rgba(244, 211, 187, 0.72) 0%, rgba(244, 211, 187, 0) 48%),
+        radial-gradient(circle at 16% 84%, rgba(183, 216, 232, 0.78) 0%, rgba(183, 216, 232, 0) 50%),
+        linear-gradient(160deg, #e8f0f8 0%, #d9e5f2 48%, #e9e4df 100%);
+    }
+
+    .bg-wallpaper-dark {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.58s cubic-bezier(0.22, 1, 0.36, 1);
+      background-image:
+        radial-gradient(circle at 14% 10%, rgba(56, 108, 168, 0.42) 0%, rgba(56, 108, 168, 0) 44%),
+        radial-gradient(circle at 86% 18%, rgba(44, 78, 122, 0.45) 0%, rgba(44, 78, 122, 0) 46%),
+        radial-gradient(circle at 78% 82%, rgba(92, 68, 74, 0.32) 0%, rgba(92, 68, 74, 0) 48%),
+        radial-gradient(circle at 18% 82%, rgba(36, 86, 102, 0.35) 0%, rgba(36, 86, 102, 0) 46%),
+        linear-gradient(165deg, #0d141e 0%, #121c29 52%, #0d121a 100%);
+    }
+
+    html[data-theme="dark"] .bg-wallpaper-dark {
+      opacity: 1;
+    }
+
+    /* Per-Component Glass Shatter & Crystallize Reform States */
+    .shatter-gone {
+      opacity: 0 !important;
+      transform: scale(0.92) !important;
+      transition: none !important;
+      pointer-events: none !important;
+    }
+
+    .shatter-reform {
+      opacity: 1 !important;
+      transform: scale(1) !important;
+      transition:
+        opacity 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.54s cubic-bezier(0.22, 1.24, 0.36, 1) !important;
     }
 
     body.modal-open {
@@ -1324,6 +1372,8 @@
 </head>
 <body>
 
+  <div class="bg-wallpaper" aria-hidden="true"></div>
+  <div class="bg-wallpaper-dark" aria-hidden="true"></div>
   <canvas id="shatterCanvas" aria-hidden="true"></canvas>
 
   <main class="app" id="appRoot">
@@ -1757,108 +1807,279 @@
       }
     }
 
-    function buildGlassShards(w, h, ox, oy, fromTheme) {
-      const maxR = Math.hypot(Math.max(ox, w - ox), Math.max(oy, h - oy)) + 48;
-      const spokes = 12;
-      const ringFracs = [0.06, 0.17, 0.33, 0.54, 0.78, 1.04];
-
-      // Build jittered concentric ring vertices
-      const rings = [];
-      for (let r = 0; r < ringFracs.length; r++) {
-        const pts = [];
-        const baseRad = maxR * ringFracs[r];
-        for (let s = 0; s < spokes; s++) {
-          const baseAng = (s / spokes) * Math.PI * 2;
-          const angJitter = (Math.random() - 0.5) * (Math.PI * 2 / spokes) * 0.42;
-          const radJitter = baseRad * (0.84 + Math.random() * 0.32);
-          pts.push({
-            x: ox + Math.cos(baseAng + angJitter) * radJitter,
-            y: oy + Math.sin(baseAng + angJitter) * radJitter
-          });
-        }
-        rings.push(pts);
+    function parseCssColor(colorStr, fallbackRgb, fallbackAlpha) {
+      if (!colorStr || colorStr === 'transparent') {
+        return { rgb: fallbackRgb, alpha: fallbackAlpha };
       }
+      const m = colorStr.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)/i);
+      if (!m) {
+        return { rgb: fallbackRgb, alpha: fallbackAlpha };
+      }
+      const a = m[4] !== undefined ? parseFloat(m[4]) : 1;
+      return {
+        rgb: [Math.round(parseFloat(m[1])), Math.round(parseFloat(m[2])), Math.round(parseFloat(m[3]))],
+        alpha: a
+      };
+    }
 
-      const shards = [];
-      const lightPalette = [
-        [236, 244, 252],
-        [218, 232, 246],
-        [244, 248, 253],
-        [226, 235, 245],
-        [242, 234, 228]
+    function roundedRectPath(ctx, x, y, w, h, r) {
+      const rr = Math.min(r, w / 2, h / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + rr, y);
+      ctx.arcTo(x + w, y, x + w, y + h, rr);
+      ctx.arcTo(x + w, y + h, x, y + h, rr);
+      ctx.arcTo(x, y + h, x, y, rr);
+      ctx.arcTo(x, y, x + w, y, rr);
+      ctx.closePath();
+    }
+
+    function collectShatterComponents(fromTheme) {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const listEl = document.getElementById('logListContainer');
+      const listRect = listEl ? listEl.getBoundingClientRect() : null;
+
+      // Containers to visually hide & crystallize back in sync with shards
+      const hideSelectors = [
+        '.topbar .pill-btn',
+        '#returnConfirmBanner',
+        '#portalShortcutBar',
+        '.widget',
+        '.stats-strip',
+        '.history'
       ];
-      const darkPalette = [
-        [26, 36, 52],
-        [34, 46, 66],
-        [20, 29, 44],
-        [44, 58, 80],
-        [36, 42, 58]
-      ];
-      const palette = fromTheme === 'dark' ? darkPalette : lightPalette;
-
-      function pushTri(p1, p2, p3) {
-        const cx = (p1.x + p2.x + p3.x) / 3;
-        const cy = (p1.y + p2.y + p3.y) / 3;
-        const dx = cx - ox;
-        const dy = cy - oy;
-        const dist = Math.hypot(dx, dy) || 1;
-        const nx = dx / dist;
-        const ny = dy / dist;
-        const distRatio = Math.min(1, dist / maxR);
-
-        const baseSpeed = 140 + (1 - distRatio) * 320 + Math.random() * 140;
-        const col = palette[Math.floor(Math.random() * palette.length)];
-
-        shards.push({
-          pts: [
-            { x: p1.x - cx, y: p1.y - cy },
-            { x: p2.x - cx, y: p2.y - cy },
-            { x: p3.x - cx, y: p3.y - cy }
-          ],
-          cx,
-          cy,
-          x: cx,
-          y: cy,
-          vx: nx * baseSpeed + (Math.random() - 0.5) * 110,
-          vy: ny * baseSpeed - (80 + Math.random() * 120),
-          rot: 0,
-          vRot: (Math.random() - 0.5) * 5.8,
-          tilt: Math.random() * Math.PI * 2,
-          vTilt: (Math.random() > 0.5 ? 1 : -1) * (3.2 + Math.random() * 5.2),
-          delay: distRatio * 85,
-          dist,
-          rgb: col,
-          alphaBase: fromTheme === 'dark' ? (0.76 + Math.random() * 0.16) : (0.74 + Math.random() * 0.18),
-          specular: 0.4 + Math.random() * 0.6
+      const hideTargets = [];
+      hideSelectors.forEach((sel) => {
+        document.querySelectorAll(sel).forEach((el) => {
+          if (el.classList.contains('hidden')) return;
+          const r = el.getBoundingClientRect();
+          if (r.width > 4 && r.height > 4 && r.bottom > 0 && r.top < vh) {
+            hideTargets.push(el);
+          }
         });
-      }
+      });
 
-      // Inner fan triangles around impact point
-      const center = { x: ox, y: oy };
-      for (let s = 0; s < spokes; s++) {
-        const nextS = (s + 1) % spokes;
-        pushTri(center, rings[0][s], rings[0][nextS]);
-      }
+      // Individual glass & button components to fracture into shards
+      // Ordered back-to-front so inner buttons, tiles & history chips shatter on top of cards
+      const componentSpecs = [
+        { sel: '.widget', layer: 0, kind: 'card' },
+        { sel: '.history', layer: 0, kind: 'card' },
+        { sel: '.stats-strip', layer: 1, kind: 'bar' },
+        { sel: '#portalShortcutBar', layer: 1, kind: 'bar' },
+        { sel: '#returnConfirmBanner', layer: 1, kind: 'bar' },
+        { sel: '.status-strip', layer: 2, kind: 'bar' },
+        { sel: '.tile', layer: 2, kind: 'tile' },
+        { sel: '.note-box', layer: 2, kind: 'bar' },
+        { sel: '.month-input', layer: 2, kind: 'pill' },
+        { sel: '.log-chip', layer: 2, kind: 'chip', clipToList: true },
+        { sel: '.pill-btn', layer: 3, kind: 'pill' },
+        { sel: '.open-web-btn', layer: 3, kind: 'pill' },
+        { sel: '.act-btn', layer: 3, kind: 'button' }
+      ];
 
-      // Outer ring quads split into 2 crisp glass triangles
-      for (let r = 0; r < rings.length - 1; r++) {
-        for (let s = 0; s < spokes; s++) {
-          const nextS = (s + 1) % spokes;
-          const a = rings[r][s];
-          const b = rings[r][nextS];
-          const c = rings[r + 1][nextS];
-          const d = rings[r + 1][s];
-          if ((r + s) % 2 === 0) {
-            pushTri(a, b, c);
-            pushTri(a, c, d);
-          } else {
-            pushTri(a, b, d);
-            pushTri(b, c, d);
+      const isFromDark = fromTheme === 'dark';
+      const defaultGlassRgb = isFromDark ? [38, 46, 60] : [245, 250, 255];
+      const components = [];
+      const seen = new Set();
+
+      componentSpecs.forEach((spec) => {
+        document.querySelectorAll(spec.sel).forEach((el) => {
+          if (seen.has(el)) return;
+          if (el.classList.contains('hidden') || el.closest('.hidden')) return;
+          if (el.closest('.sheet-backdrop') && !el.closest('.sheet-backdrop.is-open')) return;
+
+          const rect = el.getBoundingClientRect();
+          if (rect.width < 12 || rect.height < 12) return;
+          if (rect.bottom < 0 || rect.top > vh || rect.right < 0 || rect.left > vw) return;
+
+          if (spec.clipToList && listRect) {
+            if (rect.bottom < listRect.top + 4 || rect.top > listRect.bottom - 4) return;
+          }
+
+          seen.add(el);
+          const cs = window.getComputedStyle(el);
+          const parsedBg = parseCssColor(cs.backgroundColor, defaultGlassRgb, isFromDark ? 0.68 : 0.66);
+          const rawRadius = parseFloat(cs.borderTopLeftRadius) || 14;
+          const radius = Math.min(rawRadius, rect.width / 2, rect.height / 2);
+
+          // Ensure glass cards look distinctly frosted and solid buttons retain vivid color
+          const isSolidBtn = spec.kind === 'button';
+          const baseAlpha = isSolidBtn
+            ? Math.max(0.88, parsedBg.alpha)
+            : Math.max(isFromDark ? 0.62 : 0.66, Math.min(0.88, parsedBg.alpha + 0.14));
+
+          components.push({
+            el,
+            x: rect.left,
+            y: rect.top,
+            w: rect.width,
+            h: rect.height,
+            r: radius,
+            cx: rect.left + rect.width / 2,
+            cy: rect.top + rect.height / 2,
+            layer: spec.layer,
+            kind: spec.kind,
+            rgb: parsedBg.rgb,
+            alpha: baseAlpha,
+            isSolidBtn
+          });
+        });
+      });
+
+      return { components, hideTargets };
+    }
+
+    function buildComponentShards(components, ox, oy, fromTheme) {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const maxDist = Math.hypot(Math.max(ox, vw - ox), Math.max(oy, vh - oy)) || 1;
+      const isFromDark = fromTheme === 'dark';
+
+      const allShards = [];
+      const componentCracks = [];
+
+      components.forEach((comp) => {
+        const distFromTap = Math.hypot(comp.cx - ox, comp.cy - oy);
+        const waveRatio = Math.min(1, distFromTap / maxDist);
+        const compDelay = waveRatio * 95;
+
+        // Local impact origin on this component (point closest to tap)
+        const localOx = Math.max(comp.x + 4, Math.min(comp.x + comp.w - 4, ox));
+        const localOy = Math.max(comp.y + 4, Math.min(comp.y + comp.h - 4, oy));
+
+        // Choose crisp shard mesh density based on component size & type
+        let cols = 3;
+        let rows = 2;
+        if (comp.kind === 'card') {
+          cols = 4;
+          rows = comp.h > 260 ? 4 : 3;
+        } else if (comp.kind === 'bar') {
+          cols = comp.w > 260 ? 5 : 3;
+          rows = comp.h > 64 ? 2 : 1;
+        } else if (comp.kind === 'tile' || comp.kind === 'button') {
+          cols = 3;
+          rows = 2;
+        } else {
+          // Small pills, chips, theme button
+          cols = comp.w > 64 ? 3 : 2;
+          rows = 2;
+        }
+
+        const cornerInset = Math.min(comp.r * 0.28, 7);
+        const grid = [];
+
+        for (let r = 0; r <= rows; r++) {
+          const rowPts = [];
+          for (let c = 0; c <= cols; c++) {
+            const u = c / cols;
+            const v = r / rows;
+            let px = comp.x + u * comp.w;
+            let py = comp.y + v * comp.h;
+
+            const isLeft = c === 0;
+            const isRight = c === cols;
+            const isTop = r === 0;
+            const isBottom = r === rows;
+
+            // Keep outer silhouette faithful while giving interior & edge vertices jagged glass angles
+            if (!isLeft && !isRight) {
+              px += (Math.random() - 0.5) * (comp.w / cols) * 0.48;
+            }
+            if (!isTop && !isBottom) {
+              py += (Math.random() - 0.5) * (comp.h / rows) * 0.48;
+            }
+
+            // Softly bevel the 4 outer corners to match rounded glass pills & cards
+            if ((isLeft || isRight) && (isTop || isBottom)) {
+              px += isLeft ? cornerInset : -cornerInset;
+              py += isTop ? cornerInset : -cornerInset;
+            }
+
+            rowPts.push({ x: px, y: py });
+          }
+          grid.push(rowPts);
+        }
+
+        const crackSegments = [];
+        const addTri = (p1, p2, p3) => {
+          const cx = (p1.x + p2.x + p3.x) / 3;
+          const cy = (p1.y + p2.y + p3.y) / 3;
+
+          // Combine radial burst from tap + local explosion from component center
+          const gdx = cx - ox;
+          const gdy = cy - oy;
+          const gLen = Math.hypot(gdx, gdy) || 1;
+
+          const ldx = cx - comp.cx;
+          const ldy = cy - comp.cy;
+          const lLen = Math.hypot(ldx, ldy) || 1;
+
+          const dirX = (gdx / gLen) * 0.52 + (ldx / lLen) * 0.48;
+          const dirY = (gdy / gLen) * 0.52 + (ldy / lLen) * 0.48;
+
+          const layerBoost = 1 + comp.layer * 0.16;
+          const speed = (115 + (1 - waveRatio) * 185 + Math.random() * 115) * layerBoost;
+
+          // Slight per-shard frosted shade variation for 3D facet depth
+          const shade = Math.round((Math.random() - 0.5) * (isFromDark ? 22 : 18));
+          const shardRgb = [
+            Math.max(0, Math.min(255, comp.rgb[0] + shade)),
+            Math.max(0, Math.min(255, comp.rgb[1] + shade)),
+            Math.max(0, Math.min(255, comp.rgb[2] + shade))
+          ];
+
+          allShards.push({
+            pts: [
+              { x: p1.x - cx, y: p1.y - cy },
+              { x: p2.x - cx, y: p2.y - cy },
+              { x: p3.x - cx, y: p3.y - cy }
+            ],
+            cx,
+            cy,
+            vx: dirX * speed + (Math.random() - 0.5) * 85,
+            vy: dirY * speed - (95 + Math.random() * 110 + comp.layer * 22),
+            vRot: (Math.random() - 0.5) * 7.2,
+            tilt: Math.random() * Math.PI * 2,
+            vTilt: (Math.random() > 0.5 ? 1 : -1) * (3.8 + Math.random() * 5.8),
+            delay: compDelay + Math.random() * 32,
+            rgb: shardRgb,
+            alphaBase: comp.alpha,
+            isSolidBtn: comp.isSolidBtn,
+            layer: comp.layer,
+            specular: 0.45 + Math.random() * 0.55
+          });
+
+          crackSegments.push([p1, p2], [p2, p3], [p3, p1]);
+        };
+
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const a = grid[r][c];
+            const b = grid[r][c + 1];
+            const d = grid[r + 1][c + 1];
+            const e = grid[r + 1][c];
+            if ((r + c) % 2 === 0) {
+              addTri(a, b, d);
+              addTri(a, d, e);
+            } else {
+              addTri(a, b, e);
+              addTri(b, d, e);
+            }
           }
         }
-      }
 
-      return { shards, maxR };
+        componentCracks.push({
+          comp,
+          localOx,
+          localOy,
+          waveDelay: waveRatio * 55,
+          segments: crackSegments
+        });
+      });
+
+      // Sort shards by layer so buttons/tiles/chips render cleanly above cards
+      allShards.sort((a, b) => a.layer - b.layer);
+      return { allShards, componentCracks };
     }
 
     function runGlassShatterTransition(originX, originY, fromTheme, onBreak) {
@@ -1881,7 +2102,10 @@
       const ctx = canvas.getContext('2d');
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      const { shards, maxR } = buildGlassShards(w, h, originX, originY, fromTheme);
+      // Snapshot every visible glass component right before theme swap
+      const { components, hideTargets } = collectShatterComponents(fromTheme);
+      const { allShards, componentCracks } = buildComponentShards(components, originX, originY, fromTheme);
+
       const appRoot = document.getElementById('appRoot');
       if (appRoot) {
         appRoot.classList.remove('shatter-jolt');
@@ -1889,88 +2113,141 @@
         appRoot.classList.add('shatter-jolt');
       }
 
-      haptic([14, 22, 12]);
+      haptic([14, 20, 12]);
 
-      const CRACK_DURATION = 115;
+      const CRACK_DURATION = 145;
+      const REFORM_START = CRACK_DURATION + 250;
       const SHATTER_DURATION = 780;
       const TOTAL_DURATION = CRACK_DURATION + SHATTER_DURATION;
       const startTime = performance.now();
       let swapped = false;
-
+      let reformed = false;
       const isFromDark = fromTheme === 'dark';
+
+      // Sort hideTargets by distance from tap for wave reform
+      const sortedHideTargets = hideTargets
+        .map((el) => {
+          const r = el.getBoundingClientRect();
+          const d = Math.hypot(r.left + r.width / 2 - originX, r.top + r.height / 2 - originY);
+          return { el, d };
+        })
+        .sort((a, b) => a.d - b.d);
+
+      function cleanupAll() {
+        ctx.clearRect(0, 0, w, h);
+        canvas.style.display = 'none';
+        setTimeout(() => {
+          sortedHideTargets.forEach(({ el }) => {
+            el.classList.remove('shatter-gone', 'shatter-reform');
+            el.style.transitionDelay = '';
+          });
+          isShattering = false;
+        }, 280);
+      }
 
       function frame(now) {
         const elapsed = now - startTime;
         ctx.clearRect(0, 0, w, h);
 
         if (elapsed < CRACK_DURATION) {
-          // Phase 1: Glass frost sheet + rapid spiderweb crack propagation
+          // Phase 1: Fracture lines spiderweb across every individual glass component
           const p = elapsed / CRACK_DURATION;
           const easeP = 1 - Math.pow(1 - p, 3);
-          const crackRadius = maxR * easeP * 1.15;
 
-          // Subtle frosted pane holding old theme tint
-          ctx.fillStyle = isFromDark
-            ? `rgba(16, 24, 36, ${0.72 * (1 - p * 0.15)})`
-            : `rgba(232, 241, 250, ${0.72 * (1 - p * 0.15)})`;
-          ctx.fillRect(0, 0, w, h);
+          for (let i = 0; i < componentCracks.length; i++) {
+            const item = componentCracks[i];
+            const comp = item.comp;
+            const localP = Math.max(0, Math.min(1, (elapsed - item.waveDelay) / Math.max(40, CRACK_DURATION - item.waveDelay)));
+            if (localP <= 0) continue;
 
-          // Draw fracture lines expanding outward
-          ctx.save();
-          ctx.lineCap = 'round';
-          ctx.lineJoin = 'round';
-          for (let i = 0; i < shards.length; i++) {
-            const sh = shards[i];
-            if (sh.dist > crackRadius) continue;
+            ctx.save();
+            roundedRectPath(ctx, comp.x, comp.y, comp.w, comp.h, comp.r);
+            ctx.clip();
+
+            // Subtle frost flash over component surface as cracks spread
+            ctx.fillStyle = isFromDark
+              ? `rgba(180, 220, 255, ${0.14 * localP})`
+              : `rgba(255, 255, 255, ${0.26 * localP})`;
+            ctx.fillRect(comp.x, comp.y, comp.w, comp.h);
+
+            // Hairline crack mesh inside component
             ctx.beginPath();
-            ctx.moveTo(sh.cx + sh.pts[0].x, sh.cy + sh.pts[0].y);
-            ctx.lineTo(sh.cx + sh.pts[1].x, sh.cy + sh.pts[1].y);
-            ctx.lineTo(sh.cx + sh.pts[2].x, sh.cy + sh.pts[2].y);
-            ctx.closePath();
+            const segs = item.segments;
+            const segLimit = Math.ceil(segs.length * localP);
+            for (let s = 0; s < segLimit; s++) {
+              const seg = segs[s];
+              ctx.moveTo(seg[0].x, seg[0].y);
+              ctx.lineTo(seg[1].x, seg[1].y);
+            }
             ctx.strokeStyle = isFromDark
-              ? `rgba(195, 228, 255, ${0.65 * easeP})`
-              : `rgba(255, 255, 255, ${0.92 * easeP})`;
+              ? `rgba(210, 236, 255, ${0.78 * localP})`
+              : `rgba(255, 255, 255, ${0.95 * localP})`;
+            ctx.lineWidth = comp.kind === 'card' ? 1.35 : 1.1;
+            ctx.stroke();
+
+            // Bright rim highlight on cracking glass edge
+            roundedRectPath(ctx, comp.x + 0.5, comp.y + 0.5, comp.w - 1, comp.h - 1, comp.r);
+            ctx.strokeStyle = isFromDark
+              ? `rgba(190, 228, 255, ${0.55 * localP})`
+              : `rgba(255, 255, 255, ${0.9 * localP})`;
             ctx.lineWidth = 1.25;
             ctx.stroke();
+
+            ctx.restore();
           }
 
-          // Bright impact flash at tap origin
-          const flashR = 26 + easeP * 85;
+          // Impact spark ring at tap origin
+          const flashR = 20 + easeP * 72;
           const grad = ctx.createRadialGradient(originX, originY, 0, originX, originY, flashR);
-          grad.addColorStop(0, `rgba(255, 255, 255, ${0.88 * (1 - p * 0.4)})`);
-          grad.addColorStop(0.45, isFromDark
-            ? `rgba(110, 185, 255, ${0.42 * (1 - p * 0.4)})`
-            : `rgba(255, 255, 255, ${0.48 * (1 - p * 0.5)})`);
+          grad.addColorStop(0, `rgba(255, 255, 255, ${0.92 * (1 - p * 0.35)})`);
+          grad.addColorStop(0.5, isFromDark
+            ? `rgba(110, 190, 255, ${0.42 * (1 - p * 0.4)})`
+            : `rgba(255, 255, 255, ${0.46 * (1 - p * 0.45)})`);
           grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
           ctx.fillStyle = grad;
           ctx.beginPath();
           ctx.arc(originX, originY, flashR, 0, Math.PI * 2);
           ctx.fill();
-          ctx.restore();
         } else {
-          // Phase 2: Reveal new theme underneath as shards explode and fall away
+          // Phase 2: Components break apart into flying shards & theme switches underneath
           if (!swapped) {
             swapped = true;
+            // Hide real glass components right as their shards detach
+            sortedHideTargets.forEach(({ el }) => {
+              el.classList.remove('stagger-in', 'stagger-1', 'stagger-2', 'stagger-3', 'stagger-4', 'shatter-reform');
+              el.classList.add('shatter-gone');
+            });
+            // Switch theme so wallpaper cross-fades & hidden cards prepare new glass styles
             onBreak();
           }
 
-          const sElapsed = elapsed - CRACK_DURATION;
-          const gravity = 1580;
+          // Phase 3: Re-materialize new theme's glass components with staggered spring pop
+          if (!reformed && elapsed >= REFORM_START) {
+            reformed = true;
+            sortedHideTargets.forEach(({ el }, idx) => {
+              el.style.transitionDelay = `${Math.min(idx * 34, 180)}ms`;
+              el.classList.remove('shatter-gone');
+              el.classList.add('shatter-reform');
+            });
+          }
 
-          for (let i = 0; i < shards.length; i++) {
-            const sh = shards[i];
+          const sElapsed = elapsed - CRACK_DURATION;
+          const gravity = 1520;
+
+          for (let i = 0; i < allShards.length; i++) {
+            const sh = allShards[i];
             const localMs = Math.max(0, sElapsed - sh.delay);
             const t = localMs / 1000;
-            const life = Math.min(1, localMs / (SHATTER_DURATION - sh.delay * 0.5));
+            const life = Math.min(1, localMs / Math.max(260, SHATTER_DURATION - sh.delay * 0.6));
             if (life >= 1) continue;
 
             const px = sh.cx + sh.vx * t;
             const py = sh.cy + sh.vy * t + 0.5 * gravity * t * t;
             const rot = sh.vRot * t;
-            const tiltScale = 0.25 + 0.75 * Math.abs(Math.cos(sh.tilt + sh.vTilt * t));
-            const fade = life < 0.55 ? 1 : 1 - (life - 0.55) / 0.45;
+            const tiltScale = 0.22 + 0.78 * Math.abs(Math.cos(sh.tilt + sh.vTilt * t));
+            const fade = life < 0.48 ? 1 : 1 - (life - 0.48) / 0.52;
             const alpha = sh.alphaBase * fade;
-            if (alpha <= 0.01) continue;
+            if (alpha <= 0.015) continue;
 
             ctx.save();
             ctx.translate(px, py);
@@ -1983,20 +2260,21 @@
             ctx.lineTo(sh.pts[2].x, sh.pts[2].y);
             ctx.closePath();
 
-            // Specular glint catches light as shard tumbles
-            const glint = Math.pow(Math.abs(Math.sin(sh.tilt + sh.vTilt * t * 1.4)), 4) * sh.specular;
-            const rCol = Math.min(255, Math.round(sh.rgb[0] + glint * 75));
-            const gCol = Math.min(255, Math.round(sh.rgb[1] + glint * 82));
-            const bCol = Math.min(255, Math.round(sh.rgb[2] + glint * 95));
+            // Specular gleam as each glass facet tumbles
+            const glint = Math.pow(Math.abs(Math.sin(sh.tilt + sh.vTilt * t * 1.45)), 4) * sh.specular;
+            const boost = sh.isSolidBtn ? 55 : 85;
+            const rCol = Math.min(255, Math.round(sh.rgb[0] + glint * boost));
+            const gCol = Math.min(255, Math.round(sh.rgb[1] + glint * boost));
+            const bCol = Math.min(255, Math.round(sh.rgb[2] + glint * (boost + 12)));
 
             ctx.fillStyle = `rgba(${rCol}, ${gCol}, ${bCol}, ${alpha})`;
             ctx.fill();
 
-            // Crisp frosted glass rim highlight
+            // Crisp beveled glass rim
             ctx.strokeStyle = isFromDark
-              ? `rgba(180, 222, 255, ${Math.min(0.85, (0.35 + glint * 0.5) * fade)})`
-              : `rgba(255, 255, 255, ${Math.min(0.95, (0.72 + glint * 0.28) * fade)})`;
-            ctx.lineWidth = 1.1;
+              ? `rgba(195, 232, 255, ${Math.min(0.88, (0.38 + glint * 0.52) * fade)})`
+              : `rgba(255, 255, 255, ${Math.min(0.96, (0.72 + glint * 0.28) * fade)})`;
+            ctx.lineWidth = sh.layer >= 2 ? 1.15 : 0.95;
             ctx.stroke();
 
             ctx.restore();
@@ -2006,9 +2284,7 @@
         if (elapsed < TOTAL_DURATION) {
           requestAnimationFrame(frame);
         } else {
-          ctx.clearRect(0, 0, w, h);
-          canvas.style.display = 'none';
-          isShattering = false;
+          cleanupAll();
         }
       }
 
@@ -3332,6 +3608,11 @@
     setInterval(updateClock, 1000);
     applySettingsToUI();
     updateUI();
+    setTimeout(() => {
+      document.querySelectorAll('.stagger-in').forEach((el) => {
+        el.classList.remove('stagger-in', 'stagger-1', 'stagger-2', 'stagger-3', 'stagger-4');
+      });
+    }, 850);
   </script>
 </body>
 </html>
