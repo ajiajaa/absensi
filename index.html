@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
@@ -7,8 +7,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <title>Absen</title>
-  <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Catatan%20Absen%22%2C%22short_name%22%3A%22Absen%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23dbe7f3%22%2C%22theme_color%22%3A%22%23dbe7f3%22%7D" />
+  <title>Attendance</title>
+  <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Attendance%20Log%22%2C%22short_name%22%3A%22Attendance%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23dbe7f3%22%2C%22theme_color%22%3A%22%23dbe7f3%22%7D" />
   <style>
     :root {
       /* iPhone Daylight Wallpaper & Liquid Glass */
@@ -893,16 +893,16 @@
     <!-- Top Bar -->
     <header class="topbar">
       <div class="brand">
-        <h1>Absen</h1>
-        <p>Log tersimpan lokal</p>
+        <h1>Attendance</h1>
+        <p>Saved locally on device</p>
       </div>
       <div class="top-pills">
         <button class="pill-btn" onclick="openSettingsModal()">
           <span id="settingsDot" class="dot-blue hidden"></span>
-          Web Kantor
+          Work Portal
         </button>
-        <button class="pill-btn" onclick="openBackupModal()">Backup</button>
-        <button class="pill-btn icon-only" onclick="toggleTheme()" id="themeBtn" title="Ganti tema terang/gelap" aria-label="Ganti tema">
+        <button class="pill-btn" onclick="openBackupModal()">Report</button>
+        <button class="pill-btn icon-only" onclick="toggleTheme()" id="themeBtn" title="Switch light or dark theme" aria-label="Toggle theme">
           <svg id="themeIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
           </svg>
@@ -914,36 +914,36 @@
     <div id="returnConfirmBanner" class="glass return-card hidden">
       <div class="return-head">
         <div>
-          <div class="return-title" id="returnBannerTitle">Selesai scan wajah di web kantor?</div>
-          <div class="return-desc" id="returnBannerDesc">Simpan jam sekarang supaya tidak lupa.</div>
+          <div class="return-title" id="returnBannerTitle">Finished face scan on work portal?</div>
+          <div class="return-desc" id="returnBannerDesc">Tap below to save your timestamp now.</div>
         </div>
         <button class="close-circle" onclick="dismissReturnBanner()">×</button>
       </div>
       <div class="sheet-actions">
-        <button id="btnConfirmReturnAction" class="ios-btn primary" onclick="confirmReturnLog()">Simpan Sekarang</button>
-        <button class="ios-btn secondary" onclick="dismissReturnBanner()">Nanti</button>
+        <button id="btnConfirmReturnAction" class="ios-btn primary" onclick="confirmReturnLog()">Save Now</button>
+        <button class="ios-btn secondary" onclick="dismissReturnBanner()">Later</button>
       </div>
     </div>
 
     <!-- Portal Shortcut Bar -->
     <div id="portalShortcutBar" class="glass portal-bar hidden">
       <div class="portal-meta">
-        <div class="portal-name" id="portalLabelDisplay">Web Absen Kantor</div>
+        <div class="portal-name" id="portalLabelDisplay">Work Attendance Portal</div>
         <div class="portal-url" id="portalUrlDisplay">https://...</div>
       </div>
-      <button class="open-web-btn" onclick="openPortalDirectly()">Buka Web ↗</button>
+      <button class="open-web-btn" onclick="openPortalDirectly()">Open Web ↗</button>
     </div>
 
     <!-- Main iPhone Glass Widget -->
     <section class="glass widget">
       <div class="widget-header">
         <div>
-          <div class="date-day" id="todayDayName">Hari Ini</div>
+          <div class="date-day" id="todayDayName">Today</div>
           <div class="date-full" id="todayDateText">--</div>
         </div>
         <div>
           <div class="clock-big nums" id="liveClock">--:--</div>
-          <div class="clock-zone">Waktu lokal</div>
+          <div class="clock-zone" id="clockZone">Local time</div>
         </div>
       </div>
 
@@ -957,8 +957,8 @@
           </svg>
         </div>
         <div>
-          <div class="status-title" id="statusHeadline">Belum absen masuk</div>
-          <div class="status-sub" id="statusSubtext">Catat setelah scan wajah di browser</div>
+          <div class="status-title" id="statusHeadline">Not checked in yet</div>
+          <div class="status-sub" id="statusSubtext">Log right after scanning your face</div>
         </div>
       </div>
 
@@ -966,16 +966,16 @@
       <div class="tiles">
         <div class="tile">
           <div class="tile-top">
-            <span>Masuk</span>
-            <button id="editInBtn" class="edit-link hidden" onclick="openEditModal('in')">Ubah</button>
+            <span>Check In</span>
+            <button id="editInBtn" class="edit-link hidden" onclick="openEditModal('in')">Edit</button>
           </div>
           <div id="todayInTime" class="tile-time nums">--:--</div>
         </div>
 
         <div class="tile">
           <div class="tile-top">
-            <span>Pulang</span>
-            <button id="editOutBtn" class="edit-link hidden" onclick="openEditModal('out')">Ubah</button>
+            <span>Check Out</span>
+            <button id="editOutBtn" class="edit-link hidden" onclick="openEditModal('out')">Edit</button>
           </div>
           <div id="todayOutTime" class="tile-time nums">--:--</div>
         </div>
@@ -984,47 +984,47 @@
       <!-- Primary Actions -->
       <div class="actions">
         <button class="act-btn in" onclick="handleAttendanceAction('in')">
-          <span class="act-label">Catat Masuk</span>
-          <span class="act-hint" id="btnCheckInSub">Simpan jam sekarang</span>
+          <span class="act-label">Check In</span>
+          <span class="act-hint" id="btnCheckInSub">Save current time</span>
         </button>
 
         <button class="act-btn out" onclick="handleAttendanceAction('out')">
-          <span class="act-label">Catat Pulang</span>
-          <span class="act-hint" id="btnCheckOutSub">Simpan jam sekarang</span>
+          <span class="act-label">Check Out</span>
+          <span class="act-hint" id="btnCheckOutSub">Save current time</span>
         </button>
       </div>
 
       <!-- Quick Note -->
-      <input id="quickNoteInput" class="note-box" type="text" placeholder="Catatan opsional (misal: WFO, scan aman)" />
+      <input id="quickNoteInput" class="note-box" type="text" placeholder="Optional note (e.g., WFO, face scan done)" />
     </section>
 
     <!-- Monthly Stats -->
     <section class="glass stats-strip">
       <div class="stat-col">
         <div class="stat-val nums" id="statTotalDays">0</div>
-        <div class="stat-lbl">Hadir</div>
+        <div class="stat-lbl">Present</div>
       </div>
       <div class="stat-col">
         <div class="stat-val nums" id="statCompleteDays">0</div>
-        <div class="stat-lbl">Lengkap</div>
+        <div class="stat-lbl">Complete</div>
       </div>
       <div class="stat-col">
         <div class="stat-val nums" id="statMissingOut">0</div>
-        <div class="stat-lbl">Lupa Pulang</div>
+        <div class="stat-lbl">Missed Out</div>
       </div>
     </section>
 
     <!-- History Section -->
     <section class="glass history">
       <div class="history-head">
-        <span class="history-title">Riwayat</span>
-        <button class="text-btn" onclick="openManualAddModal()">+ Tambah</button>
+        <span class="history-title">History</span>
+        <button class="text-btn" onclick="openManualAddModal()">+ Add</button>
       </div>
 
       <div class="filter-bar">
         <input type="month" id="filterMonth" class="month-input" onchange="renderLogs()" />
-        <button class="pill-btn" style="height: 32px; font-size: 12px;" onclick="resetFilter()">Semua</button>
-        <button class="pill-btn" style="height: 32px; font-size: 12px; margin-left: auto;" onclick="openInstallModal()">Pasang di HP</button>
+        <button class="pill-btn" style="height: 32px; font-size: 12px;" onclick="resetFilter()">All</button>
+        <button class="pill-btn" style="height: 32px; font-size: 12px; margin-left: auto;" onclick="openInstallModal()">Install App</button>
       </div>
 
       <div id="logListContainer" class="log-list"></div>
@@ -1033,164 +1033,164 @@
   </main>
 
   <!-- Toast -->
-  <div id="toast" class="toast">Tersimpan</div>
+  <div id="toast" class="toast">Saved</div>
 
-  <!-- MODAL: PENGATURAN WEB KANTOR -->
+  <!-- MODAL: WORK PORTAL SETTINGS -->
   <div id="settingsModal" class="sheet-backdrop hidden" onclick="backdropClose(event, 'settingsModal')">
     <div class="sheet">
       <div class="grabber"></div>
       <div class="sheet-head">
-        <span class="sheet-title">Web Absen Kantor</span>
+        <span class="sheet-title">Work Attendance Portal</span>
         <button class="close-circle" onclick="closeModal('settingsModal')">×</button>
       </div>
 
       <div class="field">
-        <label>Nama Portal</label>
-        <input type="text" id="settingPortalName" placeholder="Misal: Absen Kantor" />
+        <label>Portal Name</label>
+        <input type="text" id="settingPortalName" placeholder="e.g., Office HR Portal" />
       </div>
 
       <div class="field">
-        <label>URL Halaman Absen</label>
-        <input type="url" id="settingPortalUrl" placeholder="https://absen.kantorku.co.id" />
-        <span class="hint-text">Alamat browser kantor yang biasa dipakai untuk check-in dan scan wajah.</span>
+        <label>Attendance Page URL</label>
+        <input type="url" id="settingPortalUrl" placeholder="https://attendance.company.com" />
+        <span class="hint-text">The browser link you use for daily check-in and face scan.</span>
       </div>
 
       <div class="field">
-        <label>Alur Tombol Catat</label>
+        <label>Button Behavior</label>
         <div class="option-list">
           <label class="option-item">
             <input type="radio" name="workflowMode" value="log_and_open" checked />
             <div>
-              <span class="option-title">Catat dulu, lalu buka web kantor</span>
-              <span class="option-desc">Jam langsung tersimpan, kemudian tab web absen kantor terbuka otomatis.</span>
+              <span class="option-title">Log time first, then open portal</span>
+              <span class="option-desc">Saves your timestamp immediately, then opens your work portal in a new tab.</span>
             </div>
           </label>
 
           <label class="option-item">
             <input type="radio" name="workflowMode" value="open_then_confirm" />
             <div>
-              <span class="option-title">Buka web dulu, simpan saat kembali</span>
-              <span class="option-desc">Buka portal kantor dulu. Saat balik ke sini setelah scan, muncul tombol simpan.</span>
+              <span class="option-title">Open portal first, confirm on return</span>
+              <span class="option-desc">Opens the portal first. A one-tap confirmation banner appears when you switch back.</span>
             </div>
           </label>
 
           <label class="option-item">
             <input type="radio" name="workflowMode" value="separate_shortcut" />
             <div>
-              <span class="option-title">Shortcut terpisah</span>
-              <span class="option-desc">Tombol Catat hanya simpan log; web kantor dibuka dari tombol Buka Web di atas.</span>
+              <span class="option-title">Separate shortcut only</span>
+              <span class="option-desc">Main buttons only save locally; use the Open Web button above to launch the portal.</span>
             </div>
           </label>
         </div>
       </div>
 
       <div class="sheet-actions">
-        <button class="ios-btn danger" onclick="clearPortalSettings()">Hapus</button>
-        <button class="ios-btn primary" onclick="savePortalSettings()">Simpan</button>
+        <button class="ios-btn danger" onclick="clearPortalSettings()">Clear</button>
+        <button class="ios-btn primary" onclick="savePortalSettings()">Save</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: EDIT JAM -->
+  <!-- MODAL: EDIT TIME -->
   <div id="editModal" class="sheet-backdrop hidden" onclick="backdropClose(event, 'editModal')">
     <div class="sheet">
       <div class="grabber"></div>
       <div class="sheet-head">
-        <span class="sheet-title" id="editModalTitle">Ubah Jam</span>
+        <span class="sheet-title" id="editModalTitle">Edit Time</span>
         <button class="close-circle" onclick="closeModal('editModal')">×</button>
       </div>
       <input type="hidden" id="editDateKey" />
       <input type="hidden" id="editType" />
 
       <div class="field">
-        <label>Jam</label>
+        <label>Time</label>
         <input type="time" step="1" id="editTimeInput" class="nums" />
       </div>
 
       <div class="field">
-        <label>Catatan</label>
-        <input type="text" id="editNoteInput" placeholder="Keterangan tambahan..." />
+        <label>Note</label>
+        <input type="text" id="editNoteInput" placeholder="Additional details..." />
       </div>
 
       <div class="sheet-actions">
-        <button class="ios-btn danger" onclick="deleteSpecificPunch()">Hapus Jam</button>
-        <button class="ios-btn primary" onclick="saveEditedTime()">Simpan</button>
+        <button class="ios-btn danger" onclick="deleteSpecificPunch()">Delete Time</button>
+        <button class="ios-btn primary" onclick="saveEditedTime()">Save</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: TAMBAH MANUAL -->
+  <!-- MODAL: ADD MANUAL ENTRY -->
   <div id="manualAddModal" class="sheet-backdrop hidden" onclick="backdropClose(event, 'manualAddModal')">
     <div class="sheet">
       <div class="grabber"></div>
       <div class="sheet-head">
-        <span class="sheet-title">Tambah Catatan Manual</span>
+        <span class="sheet-title">Add Manual Entry</span>
         <button class="close-circle" onclick="closeModal('manualAddModal')">×</button>
       </div>
 
       <div class="field">
-        <label>Tanggal</label>
+        <label>Date</label>
         <input type="date" id="manualDate" />
       </div>
 
       <div class="tiles" style="margin-bottom: 0;">
         <div class="field">
-          <label>Masuk</label>
+          <label>Check In</label>
           <input type="time" step="1" id="manualIn" class="nums" />
         </div>
         <div class="field">
-          <label>Pulang</label>
+          <label>Check Out</label>
           <input type="time" step="1" id="manualOut" class="nums" />
         </div>
       </div>
 
       <div class="field">
-        <label>Catatan</label>
-        <input type="text" id="manualNote" placeholder="Misal: Sudah scan wajah tapi lupa catat" />
+        <label>Note</label>
+        <input type="text" id="manualNote" placeholder="e.g., Scanned face earlier, forgot to log" />
       </div>
 
-      <button class="ios-btn primary" onclick="saveManualLog()">Simpan Catatan</button>
+      <button class="ios-btn primary" onclick="saveManualLog()">Save Entry</button>
     </div>
   </div>
 
-  <!-- MODAL: PASANG DI HP -->
+  <!-- MODAL: INSTALL APP -->
   <div id="installModal" class="sheet-backdrop hidden" onclick="backdropClose(event, 'installModal')">
     <div class="sheet">
       <div class="grabber"></div>
       <div class="sheet-head">
-        <span class="sheet-title">Pasang di Layar Utama</span>
+        <span class="sheet-title">Add to Home Screen</span>
         <button class="close-circle" onclick="closeModal('installModal')">×</button>
       </div>
       <p class="hint-text" style="font-size: 13px; color: var(--text);">
-        1. Buka halaman ini di <strong>Google Chrome</strong> HP.<br>
-        2. Ketuk ikon <strong>titik tiga (⋮)</strong> di pojok kanan atas.<br>
-        3. Pilih <strong>Tambahkan ke Layar utama</strong> (<em>Add to Home screen</em>).<br>
-        4. Letakkan ikonnya di halaman depan HP agar selalu terlihat.
+        1. Open this page in <strong>Google Chrome</strong> on your phone.<br>
+        2. Tap the <strong>three dots (⋮)</strong> menu in the top-right corner.<br>
+        3. Select <strong>Add to Home screen</strong> (or <strong>Install app</strong>).<br>
+        4. Place the icon on your home screen for quick daily checks.
       </p>
       <p class="hint-text">
-        Log tersimpan di penyimpanan lokal browser HP Anda dan tidak hilang saat HP di-restart. Jangan hapus Site Data Chrome untuk situs ini.
+        Logs are stored locally in your browser and persist across device restarts. Avoid clearing Chrome Site Data for this page.
       </p>
-      <button class="ios-btn primary" onclick="closeModal('installModal')">Selesai</button>
+      <button class="ios-btn primary" onclick="closeModal('installModal')">Done</button>
     </div>
   </div>
 
-  <!-- MODAL: BACKUP -->
+  <!-- MODAL: REPORT & BACKUP -->
   <div id="backupModal" class="sheet-backdrop hidden" onclick="backdropClose(event, 'backupModal')">
     <div class="sheet">
       <div class="grabber"></div>
       <div class="sheet-head">
-        <span class="sheet-title">Backup &amp; Restore</span>
+        <span class="sheet-title">Report &amp; Backup</span>
         <button class="close-circle" onclick="closeModal('backupModal')">×</button>
       </div>
       <p class="hint-text">
-        Simpan cadangan file ke memori HP supaya data tetap aman jika suatu saat ganti perangkat.
+        Export an Excel report with <strong>Sheet 1 in Korea Time (KST, UTC+9)</strong> and <strong>Sheet 2 in Indonesia Time (WIB, UTC+7)</strong>, or download a JSON backup.
       </p>
       <div class="sheet-actions">
-        <button class="ios-btn secondary" style="flex:1" onclick="exportJSON()">Backup (.JSON)</button>
-        <button class="ios-btn secondary" style="flex:1" onclick="exportCSV()">Laporan (.CSV)</button>
+        <button class="ios-btn primary" onclick="exportExcelReport()">Excel Report (.XLSX)</button>
+        <button class="ios-btn secondary" onclick="exportJSON()">Backup (.JSON)</button>
       </div>
       <div class="field" style="border-top: 0.5px solid var(--glass-hairline); padding-top: 12px;">
-        <label>Pulihkan dari file .JSON</label>
+        <label>Restore from .JSON backup</label>
         <input type="file" id="importFileInput" accept=".json" onchange="importJSON(event)" style="font-size: 12.5px;" />
       </div>
     </div>
@@ -1203,8 +1203,8 @@
 
     let pendingPortalAction = null;
 
-    const HARI_ID = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-    const BULAN_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    const DAYS_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const MONTHS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
     if (navigator.storage && navigator.storage.persist) {
       navigator.storage.persist().catch(() => {});
@@ -1296,10 +1296,21 @@
       return `${h}:${m}:${s}`;
     }
 
+    function getTimezoneLabel() {
+      const offsetMin = -new Date().getTimezoneOffset();
+      if (offsetMin === 420) return 'WIB · UTC+7';
+      if (offsetMin === 480) return 'WITA · UTC+8';
+      if (offsetMin === 540) return 'KST · UTC+9';
+      const sign = offsetMin >= 0 ? '+' : '-';
+      const absH = Math.floor(Math.abs(offsetMin) / 60);
+      const absM = Math.abs(offsetMin) % 60;
+      return absM ? `UTC${sign}${absH}:${String(absM).padStart(2, '0')}` : `UTC${sign}${absH}`;
+    }
+
     function formatDisplayDate(dateKey) {
       const [y, m, d] = dateKey.split('-').map(Number);
       const dt = new Date(y, m - 1, d);
-      return `${HARI_ID[dt.getDay()]}, ${d} ${BULAN_ID[m - 1]} ${y}`;
+      return `${DAYS_EN[dt.getDay()]}, ${MONTHS_EN[m - 1]} ${d}, ${y}`;
     }
 
     function showToast(msg) {
@@ -1315,8 +1326,9 @@
     function updateClock() {
       const now = new Date();
       document.getElementById('liveClock').textContent = getCurrentTimeStr(now);
-      document.getElementById('todayDayName').textContent = HARI_ID[now.getDay()];
-      document.getElementById('todayDateText').textContent = `${now.getDate()} ${BULAN_ID[now.getMonth()]} ${now.getFullYear()}`;
+      document.getElementById('todayDayName').textContent = DAYS_EN[now.getDay()];
+      document.getElementById('todayDateText').textContent = `${MONTHS_EN[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+      document.getElementById('clockZone').textContent = getTimezoneLabel();
     }
 
     function applySettingsToUI() {
@@ -1329,24 +1341,24 @@
       if (settings.portalUrl && settings.portalUrl.trim() !== '') {
         shortcutBar.classList.remove('hidden');
         settingsDot.classList.remove('hidden');
-        document.getElementById('portalLabelDisplay').textContent = settings.portalName || 'Web Absen Kantor';
+        document.getElementById('portalLabelDisplay').textContent = settings.portalName || 'Work Attendance Portal';
         document.getElementById('portalUrlDisplay').textContent = settings.portalUrl;
 
         if (settings.workflowMode === 'log_and_open') {
-          btnInSub.textContent = 'Simpan & buka web';
-          btnOutSub.textContent = 'Simpan & buka web';
+          btnInSub.textContent = 'Save & open portal';
+          btnOutSub.textContent = 'Save & open portal';
         } else if (settings.workflowMode === 'open_then_confirm') {
-          btnInSub.textContent = 'Buka web dulu';
-          btnOutSub.textContent = 'Buka web dulu';
+          btnInSub.textContent = 'Open portal first';
+          btnOutSub.textContent = 'Open portal first';
         } else {
-          btnInSub.textContent = 'Simpan jam sekarang';
-          btnOutSub.textContent = 'Simpan jam sekarang';
+          btnInSub.textContent = 'Save current time';
+          btnOutSub.textContent = 'Save current time';
         }
       } else {
         shortcutBar.classList.add('hidden');
         settingsDot.classList.add('hidden');
-        btnInSub.textContent = 'Simpan jam sekarang';
-        btnOutSub.textContent = 'Simpan jam sekarang';
+        btnInSub.textContent = 'Save current time';
+        btnOutSub.textContent = 'Save current time';
       }
     }
 
@@ -1381,7 +1393,7 @@
       const suggestedType = !todayLog.checkIn ? 'in' : (!todayLog.checkOut ? 'out' : null);
 
       launchPortalUrl(settings.portalUrl, suggestedType);
-      showToast('Membuka web kantor...');
+      showToast('Opening work portal...');
     }
 
     function handleAttendanceAction(type) {
@@ -1405,7 +1417,7 @@
 
       if (settings.workflowMode === 'open_then_confirm') {
         launchPortalUrl(settings.portalUrl, type);
-        showToast('Membuka web kantor...');
+        showToast('Opening work portal...');
       }
     }
 
@@ -1434,13 +1446,13 @@
 
       banner.dataset.pendingType = type;
       if (type === 'in') {
-        title.textContent = 'Selesai scan masuk di web kantor?';
-        desc.textContent = 'Ketuk untuk menyimpan jam masuk sekarang.';
-        btn.textContent = 'Catat Masuk';
+        title.textContent = 'Finished check-in on work portal?';
+        desc.textContent = 'Tap below to record your check-in time.';
+        btn.textContent = 'Log Check In';
       } else {
-        title.textContent = 'Selesai scan pulang di web kantor?';
-        desc.textContent = 'Ketuk untuk menyimpan jam pulang sekarang.';
-        btn.textContent = 'Catat Pulang';
+        title.textContent = 'Finished check-out on work portal?';
+        desc.textContent = 'Tap below to record your check-out time.';
+        btn.textContent = 'Log Check Out';
       }
       banner.classList.remove('hidden');
     }
@@ -1469,26 +1481,31 @@
           date: todayKey,
           checkIn: null,
           checkOut: null,
-          note: ''
+          note: '',
+          tzOffset: new Date().getTimezoneOffset()
         };
       }
 
       if (type === 'in') {
         if (logs[todayKey].checkIn) {
-          if (!confirm(`Jam masuk hari ini sudah tercatat (${logs[todayKey].checkIn.slice(0, 5)}). Ganti jadi ${nowTime.slice(0, 5)}?`)) return false;
+          if (!confirm(`Check-in is already logged (${logs[todayKey].checkIn.slice(0, 5)}). Replace with ${nowTime.slice(0, 5)}?`)) return false;
         }
         logs[todayKey].checkIn = nowTime;
+        logs[todayKey].tzOffset = new Date().getTimezoneOffset();
         if (noteText) logs[todayKey].note = noteText;
-        showToast(`Masuk dicatat · ${nowTime.slice(0, 5)}`);
+        showToast(`Checked in · ${nowTime.slice(0, 5)}`);
       } else {
         if (logs[todayKey].checkOut) {
-          if (!confirm(`Jam pulang hari ini sudah tercatat (${logs[todayKey].checkOut.slice(0, 5)}). Ganti jadi ${nowTime.slice(0, 5)}?`)) return false;
+          if (!confirm(`Check-out is already logged (${logs[todayKey].checkOut.slice(0, 5)}). Replace with ${nowTime.slice(0, 5)}?`)) return false;
         }
         logs[todayKey].checkOut = nowTime;
+        if (typeof logs[todayKey].tzOffset !== 'number') {
+          logs[todayKey].tzOffset = new Date().getTimezoneOffset();
+        }
         if (noteText) {
           logs[todayKey].note = logs[todayKey].note ? `${logs[todayKey].note} · ${noteText}` : noteText;
         }
-        showToast(`Pulang dicatat · ${nowTime.slice(0, 5)}`);
+        showToast(`Checked out · ${nowTime.slice(0, 5)}`);
       }
 
       noteInput.value = '';
@@ -1537,23 +1554,23 @@
       if (!todayLog || (!todayLog.checkIn && !todayLog.checkOut)) {
         banner.className = 'status-strip';
         icon.innerHTML = warnSvg;
-        headline.textContent = 'Belum absen masuk';
-        subtext.textContent = 'Catat setelah scan wajah di browser';
+        headline.textContent = 'Not checked in yet';
+        subtext.textContent = 'Log right after scanning your face';
       } else if (todayLog.checkIn && !todayLog.checkOut) {
         banner.className = 'status-strip in';
         icon.innerHTML = checkSvg;
-        headline.textContent = `Sudah masuk pukul ${todayLog.checkIn.slice(0, 5)}`;
-        subtext.textContent = 'Jangan lupa catat pulang nanti sore';
+        headline.textContent = `Checked in at ${todayLog.checkIn.slice(0, 5)}`;
+        subtext.textContent = 'Remember to log check-out later';
       } else if (todayLog.checkIn && todayLog.checkOut) {
         banner.className = 'status-strip done';
         icon.innerHTML = checkSvg;
-        headline.textContent = `Lengkap (${todayLog.checkIn.slice(0, 5)} – ${todayLog.checkOut.slice(0, 5)})`;
-        subtext.textContent = 'Absen masuk & pulang hari ini aman';
+        headline.textContent = `Completed (${todayLog.checkIn.slice(0, 5)} – ${todayLog.checkOut.slice(0, 5)})`;
+        subtext.textContent = 'Check-in and check-out are safely saved';
       } else {
         banner.className = 'status-strip';
         icon.innerHTML = warnSvg;
-        headline.textContent = `Pulang ${todayLog.checkOut.slice(0, 5)} · Masuk belum dicatat`;
-        subtext.textContent = 'Klik Catat Masuk jika tadi sudah absen';
+        headline.textContent = `Checked out ${todayLog.checkOut.slice(0, 5)} · No check-in`;
+        subtext.textContent = 'Tap Check In if you logged in earlier';
       }
     }
 
@@ -1587,7 +1604,7 @@
         .sort((a, b) => b.localeCompare(a));
 
       if (sortedKeys.length === 0) {
-        container.innerHTML = '<div class="empty-box">Belum ada catatan pada bulan ini.</div>';
+        container.innerHTML = '<div class="empty-box">No attendance records for this month.</div>';
         return;
       }
 
@@ -1599,17 +1616,17 @@
         return `
           <div class="log-row">
             <div class="log-row-top">
-              <span class="log-date">${formatDisplayDate(dateKey)}${isToday ? ' · Hari ini' : ''}</span>
-              <span class="log-badge ${isComplete ? 'ok' : ''}">${isComplete ? 'Lengkap' : 'Belum lengkap'}</span>
+              <span class="log-date">${formatDisplayDate(dateKey)}${isToday ? ' · Today' : ''}</span>
+              <span class="log-badge ${isComplete ? 'ok' : ''}">${isComplete ? 'Complete' : 'Incomplete'}</span>
             </div>
 
             <div class="log-pair">
               <div class="log-chip" onclick="openEditModalForDate('${dateKey}', 'in')">
-                <span>Masuk</span>
+                <span>In</span>
                 <strong class="nums">${item.checkIn ? item.checkIn.slice(0, 5) : '--:--'}</strong>
               </div>
               <div class="log-chip" onclick="openEditModalForDate('${dateKey}', 'out')">
-                <span>Pulang</span>
+                <span>Out</span>
                 <strong class="nums">${item.checkOut ? item.checkOut.slice(0, 5) : '--:--'}</strong>
               </div>
             </div>
@@ -1621,7 +1638,11 @@
     }
 
     function escapeHtml(str) {
-      return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+      return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+    }
+
+    function escapeXml(str) {
+      return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[m]));
     }
 
     function resetFilter() {
@@ -1654,13 +1675,13 @@
       const normalized = rawUrl ? normalizeUrl(rawUrl) : '';
 
       saveSettingsToStorage({
-        portalName: portalName || 'Web Absen Kantor',
+        portalName: portalName || 'Work Attendance Portal',
         portalUrl: normalized,
         workflowMode: selectedMode
       });
 
       closeModal('settingsModal');
-      showToast(normalized ? 'Pengaturan disimpan' : 'URL web dikosongkan');
+      showToast(normalized ? 'Settings saved' : 'Portal URL cleared');
     }
 
     function clearPortalSettings() {
@@ -1672,7 +1693,7 @@
         workflowMode: 'log_and_open'
       });
       closeModal('settingsModal');
-      showToast('URL web dihapus');
+      showToast('Portal URL removed');
     }
 
     function openEditModal(type) {
@@ -1684,7 +1705,7 @@
       const item = logs[dateKey] || { date: dateKey, checkIn: '', checkOut: '', note: '' };
       document.getElementById('editDateKey').value = dateKey;
       document.getElementById('editType').value = type;
-      document.getElementById('editModalTitle').textContent = `Ubah Jam ${type === 'in' ? 'Masuk' : 'Pulang'}`;
+      document.getElementById('editModalTitle').textContent = `Edit ${type === 'in' ? 'Check-In' : 'Check-Out'}`;
       document.getElementById('editTimeInput').value = type === 'in' ? (item.checkIn || '08:00:00') : (item.checkOut || '17:00:00');
       document.getElementById('editNoteInput').value = item.note || '';
       document.getElementById('editModal').classList.remove('hidden');
@@ -1696,19 +1717,30 @@
       let timeVal = document.getElementById('editTimeInput').value;
       const noteVal = document.getElementById('editNoteInput').value.trim();
 
-      if (!timeVal) return alert('Pilih jam terlebih dahulu');
+      if (!timeVal) return alert('Please select a time first.');
       if (timeVal.length === 5) timeVal += ':00';
 
       const logs = getLogs();
-      if (!logs[dateKey]) logs[dateKey] = { date: dateKey, checkIn: null, checkOut: null, note: '' };
+      if (!logs[dateKey]) {
+        logs[dateKey] = {
+          date: dateKey,
+          checkIn: null,
+          checkOut: null,
+          note: '',
+          tzOffset: new Date().getTimezoneOffset()
+        };
+      }
 
       if (type === 'in') logs[dateKey].checkIn = timeVal;
       else logs[dateKey].checkOut = timeVal;
       logs[dateKey].note = noteVal;
+      if (typeof logs[dateKey].tzOffset !== 'number') {
+        logs[dateKey].tzOffset = new Date().getTimezoneOffset();
+      }
 
       saveLogs(logs);
       closeModal('editModal');
-      showToast('Jam diperbarui');
+      showToast('Time updated');
     }
 
     function deleteSpecificPunch() {
@@ -1724,7 +1756,7 @@
         saveLogs(logs);
       }
       closeModal('editModal');
-      showToast('Jam dihapus');
+      showToast('Time deleted');
     }
 
     function openManualAddModal() {
@@ -1741,8 +1773,8 @@
       let outVal = document.getElementById('manualOut').value;
       const noteVal = document.getElementById('manualNote').value.trim();
 
-      if (!dateKey) return alert('Tanggal wajib diisi');
-      if (!inVal && !outVal) return alert('Isi minimal jam masuk atau pulang');
+      if (!dateKey) return alert('Date is required.');
+      if (!inVal && !outVal) return alert('Please enter at least a check-in or check-out time.');
 
       if (inVal && inVal.length === 5) inVal += ':00';
       if (outVal && outVal.length === 5) outVal += ':00';
@@ -1752,11 +1784,12 @@
         date: dateKey,
         checkIn: inVal || null,
         checkOut: outVal || null,
-        note: noteVal
+        note: noteVal,
+        tzOffset: new Date().getTimezoneOffset()
       };
       saveLogs(logs);
       closeModal('manualAddModal');
-      showToast('Catatan ditambahkan');
+      showToast('Entry added');
     }
 
     function openInstallModal() {
@@ -1780,33 +1813,401 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `backup-absen-${getLocalDateKey()}.json`;
+      a.download = `attendance-backup-${getLocalDateKey()}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      showToast('Backup JSON diunduh');
+      showToast('JSON backup downloaded');
     }
 
-    function exportCSV() {
-      const logs = getLogs();
+    /* =====================================================================
+       TIMEZONE CONVERSION & MULTI-SHEET EXCEL (.XLSX) REPORT GENERATOR
+       Sheet 1: Korea Time (KST, UTC+9)
+       Sheet 2: Indonesia Time (WIB, UTC+7)
+       Zero external dependencies — works 100% offline on mobile & desktop.
+       ===================================================================== */
+
+    function pad2(n) {
+      return String(n).padStart(2, '0');
+    }
+
+    function parsePunchToUtcMs(dateKey, timeStr, sourceTzOffsetMin) {
+      if (!dateKey || !timeStr) return null;
+      const [y, m, d] = dateKey.split('-').map(Number);
+      const parts = timeStr.split(':').map(Number);
+      const hh = parts[0] || 0;
+      const mm = parts[1] || 0;
+      const ss = parts[2] || 0;
+      // getTimezoneOffset() is (UTC - local) in minutes, e.g., -420 for UTC+7 (WIB)
+      const offsetMin = typeof sourceTzOffsetMin === 'number' ? sourceTzOffsetMin : new Date().getTimezoneOffset();
+      return Date.UTC(y, m - 1, d, hh, mm, ss) + offsetMin * 60000;
+    }
+
+    function formatUtcMsToOffset(utcMs, targetOffsetHours) {
+      const shifted = new Date(utcMs + targetOffsetHours * 3600000);
+      const y = shifted.getUTCFullYear();
+      const m = pad2(shifted.getUTCMonth() + 1);
+      const d = pad2(shifted.getUTCDate());
+      const hh = pad2(shifted.getUTCHours());
+      const mm = pad2(shifted.getUTCMinutes());
+      const ss = pad2(shifted.getUTCSeconds());
+      const dayName = DAYS_EN[shifted.getUTCDay()];
+      return {
+        dateStr: `${y}-${m}-${d}`,
+        timeStr: `${hh}:${mm}:${ss}`,
+        dayName
+      };
+    }
+
+    function formatDuration(inMs, outMs) {
+      if (inMs === null || outMs === null || outMs < inMs) return '-';
+      const totalMin = Math.floor((outMs - inMs) / 60000);
+      const hrs = Math.floor(totalMin / 60);
+      const mins = totalMin % 60;
+      return `${hrs}h ${pad2(mins)}m`;
+    }
+
+    function buildReportRowsForTimezone(logs, targetOffsetHours) {
       const keys = Object.keys(logs).sort();
-      const rows = ['Tanggal,Hari,Masuk,Pulang,Status,Catatan'];
-      keys.forEach(k => {
-        const item = logs[k];
-        const [y, m, d] = k.split('-').map(Number);
-        const dayName = HARI_ID[new Date(y, m - 1, d).getDay()];
-        const status = (item.checkIn && item.checkOut) ? 'Lengkap' : 'Belum lengkap';
-        const safeNote = `"${(item.note || '').replace(/"/g, '""')}"`;
-        rows.push(`${k},${dayName},${item.checkIn || '-'},${item.checkOut || '-'},${status},${safeNote}`);
+      return keys.map(dateKey => {
+        const item = logs[dateKey];
+        const srcOffset = typeof item.tzOffset === 'number' ? item.tzOffset : new Date().getTimezoneOffset();
+        const inUtc = parsePunchToUtcMs(dateKey, item.checkIn, srcOffset);
+        const outUtc = parsePunchToUtcMs(dateKey, item.checkOut, srcOffset);
+
+        const inConv = inUtc !== null ? formatUtcMsToOffset(inUtc, targetOffsetHours) : null;
+        const outConv = outUtc !== null ? formatUtcMsToOffset(outUtc, targetOffsetHours) : null;
+
+        const baseDate = inConv ? inConv.dateStr : (outConv ? outConv.dateStr : dateKey);
+        const baseDay = inConv ? inConv.dayName : (outConv ? outConv.dayName : (() => {
+          const [y, m, d] = dateKey.split('-').map(Number);
+          return DAYS_EN[new Date(y, m - 1, d).getDay()];
+        })());
+
+        let outDisplay = '-';
+        if (outConv) {
+          outDisplay = outConv.dateStr !== baseDate
+            ? `${outConv.timeStr} (+1d)`
+            : outConv.timeStr;
+        }
+
+        const isComplete = Boolean(item.checkIn && item.checkOut);
+        return {
+          date: baseDate,
+          day: baseDay,
+          checkIn: inConv ? inConv.timeStr : '-',
+          checkOut: outDisplay,
+          duration: formatDuration(inUtc, outUtc),
+          status: isComplete ? 'Complete' : 'Incomplete',
+          isComplete,
+          note: item.note || ''
+        };
       });
-      const csv = rows.join('\n');
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    }
+
+    function colLetter(idx) {
+      return String.fromCharCode(65 + idx);
+    }
+
+    function makeCell(ref, value, styleIdx) {
+      return `<c r="${ref}" t="inlineStr" s="${styleIdx}"><is><t>${escapeXml(value)}</t></is></c>`;
+    }
+
+    function buildWorksheetXml(title, tzShort, tzOffsetHours, rowsData) {
+      const nowInfo = formatUtcMsToOffset(Date.now(), tzOffsetHours);
+      const totalCount = rowsData.length;
+      const completeCount = rowsData.filter(r => r.isComplete).length;
+      const incompleteCount = totalCount - completeCount;
+
+      const xmlRows = [];
+
+      // Row 1: Report Title
+      xmlRows.push(
+        `<row r="1" ht="26" customHeight="1">${makeCell('A1', title, 1)}</row>`
+      );
+
+      // Row 2: Generated Timestamp & Summary
+      const subtitle = `Generated: ${nowInfo.dateStr} ${nowInfo.timeStr} ${tzShort}  |  Total Days: ${totalCount}  |  Complete: ${completeCount}  |  Incomplete: ${incompleteCount}`;
+      xmlRows.push(
+        `<row r="2" ht="18" customHeight="1">${makeCell('A2', subtitle, 2)}</row>`
+      );
+
+      // Row 3: Blank spacer
+      xmlRows.push(`<row r="3" ht="8" customHeight="1"/>`);
+
+      // Row 4: Table Headers
+      const headers = [
+        `Date (${tzShort})`,
+        'Day',
+        `Check-In (${tzShort})`,
+        `Check-Out (${tzShort})`,
+        'Duration',
+        'Status',
+        'Notes'
+      ];
+      const headerCells = headers.map((h, i) => makeCell(`${colLetter(i)}4`, h, 3)).join('');
+      xmlRows.push(`<row r="4" ht="24" customHeight="1">${headerCells}</row>`);
+
+      // Data Rows (starting at row 5)
+      if (rowsData.length === 0) {
+        xmlRows.push(
+          `<row r="5" ht="22" customHeight="1">${makeCell('A5', 'No attendance records found.', 2)}</row>`
+        );
+      } else {
+        rowsData.forEach((row, idx) => {
+          const rNum = idx + 5;
+          const isAlt = idx % 2 === 1;
+          const centerStyle = isAlt ? 7 : 5;
+          const leftStyle = isAlt ? 6 : 4;
+          const statusStyle = row.isComplete ? 8 : 9;
+
+          const cells = [
+            makeCell(`A${rNum}`, row.date, centerStyle),
+            makeCell(`B${rNum}`, row.day, centerStyle),
+            makeCell(`C${rNum}`, row.checkIn, centerStyle),
+            makeCell(`D${rNum}`, row.checkOut, centerStyle),
+            makeCell(`E${rNum}`, row.duration, centerStyle),
+            makeCell(`F${rNum}`, row.status, statusStyle),
+            makeCell(`G${rNum}`, row.note, leftStyle)
+          ].join('');
+          xmlRows.push(`<row r="${rNum}" ht="20" customHeight="1">${cells}</row>`);
+        });
+      }
+
+      const lastRow = Math.max(5, rowsData.length + 4);
+
+      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <sheetViews>
+    <sheetView workbookViewId="0">
+      <pane ySplit="4" topLeftCell="A5" activePane="bottomLeft" state="frozen"/>
+    </sheetView>
+  </sheetViews>
+  <sheetFormatPr defaultRowHeight="20"/>
+  <cols>
+    <col min="1" max="1" width="15" customWidth="1"/>
+    <col min="2" max="2" width="14" customWidth="1"/>
+    <col min="3" max="3" width="18" customWidth="1"/>
+    <col min="4" max="4" width="19" customWidth="1"/>
+    <col min="5" max="5" width="13" customWidth="1"/>
+    <col min="6" max="6" width="14" customWidth="1"/>
+    <col min="7" max="7" width="34" customWidth="1"/>
+  </cols>
+  <sheetData>
+    ${xmlRows.join('\n    ')}
+  </sheetData>
+  <autoFilter ref="A4:G${lastRow}"/>
+  <mergeCells count="2">
+    <mergeCell ref="A1:G1"/>
+    <mergeCell ref="A2:G2"/>
+  </mergeCells>
+</worksheet>`;
+    }
+
+    function buildStylesXml() {
+      return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <fonts count="6">
+    <font><sz val="11"/><name val="Calibri"/></font>
+    <font><b/><sz val="14"/><color rgb="FF1F3864"/><name val="Calibri"/></font>
+    <font><i/><sz val="10"/><color rgb="FF595959"/><name val="Calibri"/></font>
+    <font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>
+    <font><b/><sz val="10.5"/><color rgb="FF1E7E34"/><name val="Calibri"/></font>
+    <font><b/><sz val="10.5"/><color rgb="FFB45309"/><name val="Calibri"/></font>
+  </fonts>
+  <fills count="4">
+    <fill><patternFill patternType="none"/></fill>
+    <fill><patternFill patternType="gray125"/></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FF1F4E78"/><bgColor indexed="64"/></patternFill></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FFF4F7FB"/><bgColor indexed="64"/></patternFill></fill>
+  </fills>
+  <borders count="2">
+    <border><left/><right/><top/><bottom/><diagonal/></border>
+    <border>
+      <left style="thin"><color rgb="FFD9E1EC"/></left>
+      <right style="thin"><color rgb="FFD9E1EC"/></right>
+      <top style="thin"><color rgb="FFD9E1EC"/></top>
+      <bottom style="thin"><color rgb="FFD9E1EC"/></bottom>
+      <diagonal/>
+    </border>
+  </borders>
+  <cellStyleXfs count="1">
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="0"/>
+  </cellStyleXfs>
+  <cellXfs count="10">
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+    <xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>
+    <xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>
+    <xf numFmtId="0" fontId="3" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf>
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+    <xf numFmtId="0" fontId="0" fillId="3" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center" wrapText="1"/></xf>
+    <xf numFmtId="0" fontId="0" fillId="3" borderId="1" xfId="0" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+    <xf numFmtId="0" fontId="4" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+    <xf numFmtId="0" fontId="5" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+  </cellXfs>
+  <cellStyles count="1">
+    <cellStyle name="Normal" xfId="0" builtinId="0"/>
+  </cellStyles>
+</styleSheet>`;
+    }
+
+    const CRC32_TABLE = (() => {
+      const table = new Uint32Array(256);
+      for (let i = 0; i < 256; i++) {
+        let c = i;
+        for (let k = 0; k < 8; k++) {
+          c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+        }
+        table[i] = c >>> 0;
+      }
+      return table;
+    })();
+
+    function crc32(bytes) {
+      let c = 0xFFFFFFFF;
+      for (let i = 0; i < bytes.length; i++) {
+        c = CRC32_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+      }
+      return (c ^ 0xFFFFFFFF) >>> 0;
+    }
+
+    function createZipBlob(files) {
+      const encoder = new TextEncoder();
+      const localParts = [];
+      const centralParts = [];
+      let offset = 0;
+
+      files.forEach(file => {
+        const nameBytes = encoder.encode(file.name);
+        const dataBytes = encoder.encode(file.content);
+        const checksum = crc32(dataBytes);
+        const len = dataBytes.length;
+
+        const localHeader = new Uint8Array(30 + nameBytes.length);
+        const lv = new DataView(localHeader.buffer);
+        lv.setUint32(0, 0x04034b50, true);
+        lv.setUint16(4, 20, true);
+        lv.setUint16(6, 0x0800, true);
+        lv.setUint16(8, 0, true);
+        lv.setUint16(10, 0, true);
+        lv.setUint16(12, 0x5421, true);
+        lv.setUint32(14, checksum, true);
+        lv.setUint32(18, len, true);
+        lv.setUint32(22, len, true);
+        lv.setUint16(26, nameBytes.length, true);
+        lv.setUint16(28, 0, true);
+        localHeader.set(nameBytes, 30);
+
+        localParts.push(localHeader, dataBytes);
+
+        const centralHeader = new Uint8Array(46 + nameBytes.length);
+        const cv = new DataView(centralHeader.buffer);
+        cv.setUint32(0, 0x02014b50, true);
+        cv.setUint16(4, 20, true);
+        cv.setUint16(6, 20, true);
+        cv.setUint16(8, 0x0800, true);
+        cv.setUint16(10, 0, true);
+        cv.setUint16(12, 0, true);
+        cv.setUint16(14, 0x5421, true);
+        cv.setUint32(16, checksum, true);
+        cv.setUint32(20, len, true);
+        cv.setUint32(24, len, true);
+        cv.setUint16(28, nameBytes.length, true);
+        cv.setUint16(30, 0, true);
+        cv.setUint16(32, 0, true);
+        cv.setUint16(34, 0, true);
+        cv.setUint16(36, 0, true);
+        cv.setUint32(38, 0, true);
+        cv.setUint32(42, offset, true);
+        centralHeader.set(nameBytes, 46);
+
+        centralParts.push(centralHeader);
+        offset += localHeader.length + dataBytes.length;
+      });
+
+      const centralSize = centralParts.reduce((acc, part) => acc + part.length, 0);
+      const eocd = new Uint8Array(22);
+      const ev = new DataView(eocd.buffer);
+      ev.setUint32(0, 0x06054b50, true);
+      ev.setUint16(4, 0, true);
+      ev.setUint16(6, 0, true);
+      ev.setUint16(8, files.length, true);
+      ev.setUint16(10, files.length, true);
+      ev.setUint32(12, centralSize, true);
+      ev.setUint32(16, offset, true);
+      ev.setUint16(20, 0, true);
+
+      return new Blob([...localParts, ...centralParts, eocd], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+    }
+
+    function exportExcelReport() {
+      const logs = getLogs();
+      const kstRows = buildReportRowsForTimezone(logs, 9);
+      const wibRows = buildReportRowsForTimezone(logs, 7);
+
+      const sheet1Xml = buildWorksheetXml(
+        'Attendance Report — Korea Time (KST, UTC+9)',
+        'KST',
+        9,
+        kstRows
+      );
+
+      const sheet2Xml = buildWorksheetXml(
+        'Attendance Report — Indonesia Time (WIB, UTC+7)',
+        'WIB',
+        7,
+        wibRows
+      );
+
+      const contentTypesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+  <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+  <Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+  <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+</Types>`;
+
+      const rootRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>`;
+
+      const workbookXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheets>
+    <sheet name="Korea Time (KST)" sheetId="1" r:id="rId1"/>
+    <sheet name="Indonesia Time (WIB)" sheetId="2" r:id="rId2"/>
+  </sheets>
+</workbook>`;
+
+      const workbookRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/>
+  <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>`;
+
+      const blob = createZipBlob([
+        { name: '[Content_Types].xml', content: contentTypesXml },
+        { name: '_rels/.rels', content: rootRelsXml },
+        { name: 'xl/workbook.xml', content: workbookXml },
+        { name: 'xl/_rels/workbook.xml.rels', content: workbookRelsXml },
+        { name: 'xl/styles.xml', content: buildStylesXml() },
+        { name: 'xl/worksheets/sheet1.xml', content: sheet1Xml },
+        { name: 'xl/worksheets/sheet2.xml', content: sheet2Xml }
+      ]);
+
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `catatan-absen-${getLocalDateKey()}.csv`;
+      a.download = `attendance-report-${getLocalDateKey()}.xlsx`;
       a.click();
       URL.revokeObjectURL(url);
-      showToast('File CSV diunduh');
+      showToast('Excel report downloaded');
     }
 
     function importJSON(event) {
@@ -1824,12 +2225,12 @@
               saveSettingsToStorage(parsed.settings);
             }
             closeModal('backupModal');
-            showToast('Data dipulihkan');
+            showToast('Data restored');
           } else {
-            alert('Format file tidak sesuai');
+            alert('Invalid file format.');
           }
         } catch (err) {
-          alert('File tidak bisa dibaca');
+          alert('Unable to read JSON file.');
         }
       };
       reader.readAsText(file);
