@@ -22,16 +22,23 @@
         linear-gradient(160deg, #e8f0f8 0%, #d9e5f2 48%, #e9e4df 100%);
 
       --glass: rgba(255, 255, 255, 0.56);
-      --glass-strong: rgba(255, 255, 255, 0.72);
+      --glass-hover: rgba(255, 255, 255, 0.72);
+      --glass-strong: rgba(255, 255, 255, 0.76);
       --glass-tile: rgba(255, 255, 255, 0.48);
-      --glass-modal: rgba(248, 250, 252, 0.84);
-      --glass-border: rgba(255, 255, 255, 0.72);
-      --glass-hairline: rgba(15, 23, 42, 0.075);
+      --glass-modal: rgba(248, 250, 252, 0.86);
+      --glass-border: rgba(255, 255, 255, 0.76);
+      --glass-border-hover: rgba(255, 255, 255, 0.95);
+      --glass-hairline: rgba(15, 23, 42, 0.08);
       --glass-shadow:
         inset 0 1px 0 0 rgba(255, 255, 255, 0.88),
         inset 0 0 0 0.5px rgba(255, 255, 255, 0.45),
         0 10px 30px -10px rgba(30, 50, 75, 0.12),
         0 2px 6px rgba(30, 50, 75, 0.04);
+      --glass-shadow-hover:
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.96),
+        inset 0 0 0 0.5px rgba(255, 255, 255, 0.65),
+        0 16px 36px -10px rgba(30, 50, 75, 0.18),
+        0 4px 10px rgba(30, 50, 75, 0.06);
 
       --text: #1c1c1e;
       --text-secondary: rgba(28, 28, 30, 0.62);
@@ -52,9 +59,15 @@
       --btn-in-text: #ffffff;
       --btn-out-bg: #1c1c1e;
       --btn-out-text: #ffffff;
-      --toast-bg: rgba(28, 28, 30, 0.86);
+      --toast-bg: rgba(28, 28, 30, 0.88);
       --toast-text: #ffffff;
       --backdrop: rgba(15, 23, 42, 0.28);
+      --ripple: rgba(0, 122, 255, 0.16);
+      --ripple-light: rgba(255, 255, 255, 0.32);
+
+      --spring-bounce: cubic-bezier(0.22, 1.32, 0.36, 1);
+      --spring-snappy: cubic-bezier(0.2, 0.95, 0.3, 1.12);
+      --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     html[data-theme="dark"] {
@@ -68,16 +81,23 @@
         linear-gradient(165deg, #0d141e 0%, #121c29 52%, #0d121a 100%);
 
       --glass: rgba(34, 40, 50, 0.56);
-      --glass-strong: rgba(44, 50, 62, 0.68);
+      --glass-hover: rgba(48, 56, 70, 0.72);
+      --glass-strong: rgba(44, 50, 62, 0.72);
       --glass-tile: rgba(255, 255, 255, 0.065);
-      --glass-modal: rgba(28, 32, 40, 0.86);
+      --glass-modal: rgba(28, 32, 40, 0.88);
       --glass-border: rgba(255, 255, 255, 0.14);
+      --glass-border-hover: rgba(255, 255, 255, 0.28);
       --glass-hairline: rgba(255, 255, 255, 0.09);
       --glass-shadow:
         inset 0 1px 0 0 rgba(255, 255, 255, 0.16),
         inset 0 0 0 0.5px rgba(255, 255, 255, 0.08),
         0 14px 36px -10px rgba(0, 0, 0, 0.48),
         0 2px 8px rgba(0, 0, 0, 0.25);
+      --glass-shadow-hover:
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.26),
+        inset 0 0 0 0.5px rgba(255, 255, 255, 0.16),
+        0 18px 42px -10px rgba(0, 0, 0, 0.58),
+        0 4px 12px rgba(0, 0, 0, 0.32);
 
       --text: #f5f5f7;
       --text-secondary: rgba(245, 245, 247, 0.62);
@@ -96,11 +116,13 @@
 
       --btn-in-bg: #28a745;
       --btn-in-text: #ffffff;
-      --btn-out-bg: rgba(255, 255, 255, 0.9);
+      --btn-out-bg: rgba(255, 255, 255, 0.92);
       --btn-out-text: #111317;
-      --toast-bg: rgba(245, 245, 247, 0.92);
+      --toast-bg: rgba(245, 245, 247, 0.94);
       --toast-text: #1c1c1e;
-      --backdrop: rgba(0, 0, 0, 0.52);
+      --backdrop: rgba(0, 0, 0, 0.54);
+      --ripple: rgba(255, 255, 255, 0.16);
+      --ripple-light: rgba(255, 255, 255, 0.26);
     }
 
     * {
@@ -112,6 +134,7 @@
 
     html {
       background-color: var(--bg-base);
+      overscroll-behavior-y: none;
     }
 
     body {
@@ -127,6 +150,17 @@
       display: flex;
       justify-content: center;
       padding: max(18px, env(safe-area-inset-top)) 16px max(72px, env(safe-area-inset-bottom));
+      overscroll-behavior-y: none;
+      overflow-x: hidden;
+    }
+
+    body.modal-open {
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    button, a, input, label {
+      touch-action: manipulation;
     }
 
     .nums {
@@ -140,6 +174,103 @@
       display: flex;
       flex-direction: column;
       gap: 14px;
+      will-change: transform;
+    }
+
+    .app.shatter-jolt {
+      animation: microJolt 0.24s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+    }
+
+    /* Entrance Stagger Animation */
+    @keyframes floatUpIn {
+      from {
+        opacity: 0;
+        transform: translate3d(0, 18px, 0) scale(0.975);
+      }
+      to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+    }
+
+    @keyframes microJolt {
+      0%, 100% { transform: translate3d(0, 0, 0); }
+      20% { transform: translate3d(-2px, 1.5px, 0) scale(0.996); }
+      45% { transform: translate3d(2px, -1.5px, 0) scale(1.003); }
+      70% { transform: translate3d(-1px, 1px, 0); }
+    }
+
+    @keyframes popSpring {
+      0% { transform: scale(1); }
+      38% { transform: scale(1.075); }
+      70% { transform: scale(0.975); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes rowSlideIn {
+      from {
+        opacity: 0;
+        transform: translate3d(0, 10px, 0) scale(0.985);
+      }
+      to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+    }
+
+    @keyframes bannerSlideIn {
+      from {
+        opacity: 0;
+        transform: translate3d(0, -14px, 0) scale(0.96);
+      }
+      to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+    }
+
+    @keyframes rippleExpand {
+      0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0.65;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0;
+      }
+    }
+
+    .stagger-in {
+      animation: floatUpIn 0.52s var(--ease-out-expo) backwards;
+    }
+    .stagger-1 { animation-delay: 0.02s; }
+    .stagger-2 { animation-delay: 0.08s; }
+    .stagger-3 { animation-delay: 0.14s; }
+    .stagger-4 { animation-delay: 0.2s; }
+
+    .pop-animate {
+      animation: popSpring 0.44s var(--spring-bounce);
+    }
+
+    /* Touch Ripple Container & Element */
+    .ripple-host {
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .touch-ripple {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      background: var(--ripple);
+      animation: rippleExpand 0.52s var(--ease-out-expo) forwards;
+      z-index: 0;
+    }
+
+    .act-btn .touch-ripple,
+    .ios-btn.primary .touch-ripple {
+      background: var(--ripple-light);
     }
 
     /* Shared Glass Surface */
@@ -149,6 +280,7 @@
       -webkit-backdrop-filter: blur(28px) saturate(185%);
       border: 0.5px solid var(--glass-border);
       box-shadow: var(--glass-shadow);
+      transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
     }
 
     /* Top Bar */
@@ -156,25 +288,36 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 2px 4px;
+      gap: 8px;
+      padding: 2px 2px;
     }
 
     .brand {
       display: flex;
       align-items: center;
       gap: 10px;
+      min-width: 0;
+      cursor: pointer;
+      user-select: none;
     }
 
     .app-logo {
-      width: 38px;
-      height: 38px;
+      width: 40px;
+      height: 40px;
       flex-shrink: 0;
       display: block;
       filter: drop-shadow(0 4px 10px rgba(0, 102, 229, 0.24));
+      transition: transform 0.36s var(--spring-bounce), filter 0.25s ease;
+      will-change: transform;
     }
 
     html[data-theme="dark"] .app-logo {
       filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.42));
+    }
+
+    .brand.is-pressed .app-logo,
+    .brand:active .app-logo {
+      transform: scale(0.88) rotate(-6deg);
     }
 
     .brand h1 {
@@ -182,18 +325,23 @@
       font-weight: 700;
       letter-spacing: -0.025em;
       line-height: 1.15;
+      transition: color 0.2s ease, transform 0.25s var(--spring-snappy);
     }
 
     .brand p {
-      font-size: 12px;
+      font-size: 11.5px;
       color: var(--text-secondary);
       margin-top: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .top-pills {
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 6px;
+      flex-shrink: 0;
     }
 
     .pill-btn {
@@ -203,7 +351,7 @@
       border: 0.5px solid var(--glass-border);
       box-shadow: var(--glass-shadow);
       color: var(--text);
-      height: 34px;
+      min-height: 38px;
       padding: 0 12px;
       border-radius: 999px;
       font-size: 12.5px;
@@ -214,16 +362,23 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
-      transition: transform 0.14s ease, background 0.18s ease;
+      user-select: none;
+      transition: transform 0.28s var(--spring-bounce), background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
     .pill-btn.icon-only {
-      width: 34px;
+      width: 38px;
+      min-width: 38px;
       padding: 0;
     }
 
+    .pill-btn.is-pressed,
     .pill-btn:active {
-      transform: scale(0.94);
+      transform: scale(0.92);
+    }
+
+    .pill-btn svg {
+      transition: transform 0.4s var(--spring-bounce);
     }
 
     .dot-blue {
@@ -241,6 +396,7 @@
       flex-direction: column;
       gap: 11px;
       background: var(--glass-strong);
+      animation: bannerSlideIn 0.42s var(--spring-bounce);
     }
 
     .return-head {
@@ -265,7 +421,7 @@
     /* Portal Bar */
     .portal-bar {
       border-radius: 18px;
-      padding: 10px 12px 10px 14px;
+      padding: 10px 10px 10px 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -298,17 +454,20 @@
       color: var(--ios-blue-text);
       border: none;
       border-radius: 999px;
-      padding: 7px 12px;
-      font-size: 12px;
+      min-height: 36px;
+      padding: 0 14px;
+      font-size: 12.5px;
       font-weight: 600;
       font-family: inherit;
       cursor: pointer;
       flex-shrink: 0;
-      transition: transform 0.14s ease;
+      user-select: none;
+      transition: transform 0.28s var(--spring-bounce), background 0.2s ease;
     }
 
+    .open-web-btn.is-pressed,
     .open-web-btn:active {
-      transform: scale(0.95);
+      transform: scale(0.92);
     }
 
     /* Main iPhone Widget Card */
@@ -364,7 +523,7 @@
       margin-bottom: 14px;
       background: var(--ios-orange-tint);
       border: 0.5px solid rgba(255, 149, 0, 0.22);
-      transition: background 0.25s ease;
+      transition: background 0.3s ease, border-color 0.3s ease, transform 0.35s var(--spring-bounce);
     }
 
     .status-strip.in {
@@ -378,8 +537,8 @@
     }
 
     .status-icon {
-      width: 30px;
-      height: 30px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -387,6 +546,7 @@
       flex-shrink: 0;
       background: rgba(255, 255, 255, 0.55);
       color: var(--ios-orange-text);
+      transition: transform 0.35s var(--spring-bounce), color 0.25s ease;
     }
 
     html[data-theme="dark"] .status-icon {
@@ -401,6 +561,7 @@
       font-weight: 600;
       color: var(--ios-orange-text);
       line-height: 1.25;
+      transition: color 0.25s ease;
     }
 
     .status-strip.in .status-title { color: var(--ios-green-text); }
@@ -426,6 +587,7 @@
       border-radius: 18px;
       padding: 12px 14px;
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+      transition: transform 0.3s var(--spring-bounce), background 0.2s ease, border-color 0.2s ease;
     }
 
     html[data-theme="dark"] .tile {
@@ -439,30 +601,80 @@
       font-size: 11.5px;
       font-weight: 600;
       color: var(--text-secondary);
+      min-height: 24px;
     }
 
     .tile-time {
-      margin-top: 6px;
+      margin-top: 4px;
       font-size: 24px;
       font-weight: 600;
       letter-spacing: -0.03em;
       color: var(--text-tertiary);
+      display: inline-block;
+      transition: color 0.25s ease;
     }
 
-    .tile-time.has-in { color: var(--text); }
+    .tile-time.has-in,
     .tile-time.has-out { color: var(--text); }
 
-    .edit-link {
+    /* Animated Text Link Buttons (Generous Touch Target) */
+    .edit-link,
+    .text-btn {
+      position: relative;
       background: none;
       border: none;
       color: var(--ios-blue);
-      font-size: 12px;
-      font-weight: 500;
       font-family: inherit;
       cursor: pointer;
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.24s var(--spring-bounce), opacity 0.18s ease, color 0.18s ease;
     }
 
-    /* Action Buttons */
+    .edit-link {
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 6px 8px;
+      margin: -6px -8px;
+      border-radius: 8px;
+    }
+
+    .text-btn {
+      font-size: 13.5px;
+      font-weight: 600;
+      min-height: 36px;
+      padding: 4px 10px;
+      margin: -4px -10px;
+      border-radius: 10px;
+    }
+
+    .edit-link::after,
+    .text-btn::after {
+      content: "";
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      bottom: 4px;
+      height: 1.5px;
+      border-radius: 2px;
+      background: currentColor;
+      transform: scaleX(0);
+      transform-origin: center;
+      transition: transform 0.24s var(--ease-out-expo);
+      opacity: 0.7;
+    }
+
+    .edit-link.is-pressed,
+    .edit-link:active,
+    .text-btn.is-pressed,
+    .text-btn:active {
+      transform: scale(0.92);
+      opacity: 0.72;
+    }
+
+    /* Action Buttons (Touch-Maximized) */
     .actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -471,7 +683,8 @@
 
     .act-btn {
       border: none;
-      border-radius: 16px;
+      border-radius: 18px;
+      min-height: 62px;
       padding: 13px 10px;
       cursor: pointer;
       display: flex;
@@ -480,12 +693,25 @@
       justify-content: center;
       gap: 2px;
       font-family: inherit;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-      transition: transform 0.14s ease, opacity 0.15s ease;
+      user-select: none;
+      box-shadow: 0 5px 16px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s var(--spring-bounce), box-shadow 0.22s ease, filter 0.2s ease;
     }
 
+    .act-btn::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(115deg, transparent 25%, rgba(255, 255, 255, 0.26) 50%, transparent 75%);
+      transform: translateX(-130%);
+      transition: transform 0.65s var(--ease-out-expo);
+      pointer-events: none;
+    }
+
+    .act-btn.is-pressed,
     .act-btn:active {
-      transform: scale(0.96);
+      transform: scale(0.94);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
     }
 
     .act-btn.in {
@@ -499,28 +725,34 @@
     }
 
     .act-label {
-      font-size: 14px;
+      font-size: 14.5px;
       font-weight: 600;
       letter-spacing: -0.01em;
+      position: relative;
+      z-index: 1;
     }
 
     .act-hint {
       font-size: 11px;
-      opacity: 0.78;
+      opacity: 0.8;
+      position: relative;
+      z-index: 1;
     }
 
     /* Quick Note */
     .note-box {
       width: 100%;
       margin-top: 12px;
+      min-height: 44px;
       background: var(--glass-tile);
       border: 0.5px solid var(--glass-border);
-      border-radius: 13px;
-      padding: 10px 13px;
-      font-size: 13px;
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-size: 14px;
       color: var(--text);
       font-family: inherit;
       outline: none;
+      transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
     .note-box::placeholder {
@@ -529,12 +761,14 @@
 
     .note-box:focus {
       background: var(--glass-strong);
+      border-color: var(--ios-blue);
+      box-shadow: 0 0 0 3px var(--ios-blue-tint);
     }
 
     /* Monthly Summary Strip */
     .stats-strip {
       border-radius: 20px;
-      padding: 12px 16px;
+      padding: 13px 16px;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       text-align: center;
@@ -555,9 +789,10 @@
     }
 
     .stat-val {
-      font-size: 17px;
+      font-size: 18px;
       font-weight: 700;
       letter-spacing: -0.02em;
+      display: inline-block;
     }
 
     .stat-lbl {
@@ -566,7 +801,7 @@
       margin-top: 1px;
     }
 
-    /* History Card */
+    /* History Card & Bouncy List */
     .history {
       border-radius: 24px;
       padding: 16px;
@@ -580,23 +815,14 @@
     }
 
     .history-title {
-      font-size: 15px;
+      font-size: 15.5px;
       font-weight: 700;
       letter-spacing: -0.015em;
     }
 
-    .text-btn {
-      background: none;
-      border: none;
-      color: var(--ios-blue);
-      font-size: 13px;
-      font-weight: 600;
-      font-family: inherit;
-      cursor: pointer;
-    }
-
     .filter-bar {
       display: flex;
+      align-items: center;
       gap: 8px;
       margin-bottom: 12px;
     }
@@ -605,27 +831,44 @@
       background: var(--glass-tile);
       border: 0.5px solid var(--glass-border);
       border-radius: 12px;
-      padding: 7px 11px;
-      font-size: 12.5px;
+      min-height: 38px;
+      padding: 6px 11px;
+      font-size: 13px;
       color: var(--text);
       font-family: inherit;
       outline: none;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .month-input:focus {
+      border-color: var(--ios-blue);
+      background: var(--glass-strong);
     }
 
     .log-list {
-      display: flex;
-      flex-direction: column;
-      border-radius: 16px;
-      overflow: hidden;
+      border-radius: 18px;
+      overflow-y: auto;
+      overflow-x: hidden;
       background: var(--glass-tile);
       border: 0.5px solid var(--glass-border);
       max-height: 390px;
-      overflow-y: auto;
+      overscroll-behavior-y: contain;
+      -webkit-overflow-scrolling: touch;
+      position: relative;
+    }
+
+    .log-list-inner {
+      display: flex;
+      flex-direction: column;
+      will-change: transform;
     }
 
     .log-row {
-      padding: 12px 14px;
+      padding: 13px 14px;
       border-bottom: 0.5px solid var(--glass-hairline);
+      transition: background 0.2s ease, transform 0.45s var(--spring-bounce);
+      will-change: transform;
+      animation: rowSlideIn 0.34s var(--ease-out-expo) backwards;
     }
 
     .log-row:last-child {
@@ -646,7 +889,7 @@
 
     .log-badge {
       font-size: 11px;
-      font-weight: 500;
+      font-weight: 600;
       color: var(--ios-orange-text);
     }
 
@@ -663,17 +906,25 @@
     .log-chip {
       background: var(--glass);
       border: 0.5px solid var(--glass-border);
-      border-radius: 11px;
-      padding: 7px 10px;
+      border-radius: 12px;
+      min-height: 42px;
+      padding: 8px 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 12.5px;
+      font-size: 13px;
       cursor: pointer;
+      user-select: none;
+      transition: transform 0.28s var(--spring-bounce), background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .log-chip.is-pressed,
+    .log-chip:active {
+      transform: scale(0.95);
     }
 
     .log-chip span {
-      font-size: 11.5px;
+      font-size: 12px;
       color: var(--text-secondary);
     }
 
@@ -682,30 +933,42 @@
     }
 
     .log-note {
-      margin-top: 7px;
-      font-size: 11.5px;
+      margin-top: 8px;
+      font-size: 12px;
       color: var(--text-secondary);
     }
 
     .empty-box {
-      padding: 26px 14px;
+      padding: 32px 14px;
       text-align: center;
       font-size: 13px;
       color: var(--text-secondary);
     }
 
-    /* Bottom Sheet Modals (iOS Style) */
+    /* Animated iOS Bottom Sheet Modals */
     .sheet-backdrop {
       position: fixed;
       inset: 0;
       background: var(--backdrop);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(0px);
+      -webkit-backdrop-filter: blur(0px);
       display: flex;
       align-items: flex-end;
       justify-content: center;
       padding: 10px;
       z-index: 50;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.28s ease, backdrop-filter 0.28s ease, -webkit-backdrop-filter 0.28s ease, visibility 0.28s ease;
+    }
+
+    .sheet-backdrop.is-open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
 
     @media (min-width: 480px) {
@@ -721,23 +984,58 @@
       backdrop-filter: blur(36px) saturate(190%);
       -webkit-backdrop-filter: blur(36px) saturate(190%);
       border: 0.5px solid var(--glass-border);
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.26);
       border-radius: 28px;
-      padding: 10px 18px 20px;
+      padding: 10px 18px max(20px, env(safe-area-inset-bottom));
       max-height: 88vh;
       overflow-y: auto;
+      overscroll-behavior-y: contain;
       display: flex;
       flex-direction: column;
       gap: 14px;
+      will-change: transform, opacity;
+      transform: translate3d(0, 105%, 0) scale(0.96);
+      opacity: 0.4;
+      transition: transform 0.28s cubic-bezier(0.4, 0, 1, 1), opacity 0.22s ease;
+    }
+
+    .sheet-backdrop.is-open .sheet {
+      transform: translate3d(0, 0, 0) scale(1);
+      opacity: 1;
+      transition: transform 0.48s cubic-bezier(0.22, 1.18, 0.36, 1), opacity 0.26s ease;
+    }
+
+    .sheet.is-dragging {
+      transition: none !important;
+    }
+
+    @media (min-width: 480px) {
+      .sheet {
+        transform: translate3d(0, 26px, 0) scale(0.91);
+        opacity: 0;
+        padding-bottom: 20px;
+      }
+      .sheet-backdrop.is-open .sheet {
+        transform: translate3d(0, 0, 0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    .grabber-area {
+      padding: 6px 0 4px;
+      margin: -4px 0 -4px;
+      cursor: grab;
+      touch-action: none;
     }
 
     .grabber {
-      width: 36px;
+      width: 40px;
       height: 5px;
       border-radius: 999px;
       background: var(--text-tertiary);
-      margin: 0 auto 2px;
-      opacity: 0.55;
+      margin: 0 auto;
+      opacity: 0.65;
+      transition: transform 0.2s ease, opacity 0.2s ease;
     }
 
     .sheet-head {
@@ -747,23 +1045,28 @@
     }
 
     .sheet-title {
-      font-size: 16px;
+      font-size: 16.5px;
       font-weight: 700;
       letter-spacing: -0.02em;
     }
 
     .close-circle {
-      width: 28px;
-      height: 28px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       border: none;
       background: var(--glass-hairline);
       color: var(--text-secondary);
-      font-size: 16px;
+      font-size: 18px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: transform 0.26s var(--spring-bounce), background 0.2s ease, color 0.2s ease;
+    }
+
+    .close-circle:active {
+      transform: scale(0.88);
     }
 
     .field {
@@ -784,20 +1087,28 @@
     .field input[type="time"],
     .field input[type="date"] {
       width: 100%;
+      min-height: 46px;
       background: var(--glass-tile);
       border: 0.5px solid var(--glass-border);
-      border-radius: 13px;
-      padding: 10px 12px;
-      font-size: 14px;
+      border-radius: 14px;
+      padding: 10px 13px;
+      font-size: 16px;
       color: var(--text);
       font-family: inherit;
       outline: none;
+      transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .field input:focus {
+      border-color: var(--ios-blue);
+      background: var(--glass-strong);
+      box-shadow: 0 0 0 3px var(--ios-blue-tint);
     }
 
     .hint-text {
-      font-size: 11.5px;
+      font-size: 12px;
       color: var(--text-secondary);
-      line-height: 1.45;
+      line-height: 1.5;
     }
 
     .option-list {
@@ -809,27 +1120,36 @@
     .option-item {
       display: flex;
       align-items: flex-start;
-      gap: 10px;
-      padding: 11px 12px;
-      border-radius: 14px;
+      gap: 11px;
+      padding: 13px 13px;
+      border-radius: 15px;
       background: var(--glass-tile);
       border: 0.5px solid var(--glass-border);
       cursor: pointer;
+      user-select: none;
+      transition: transform 0.26s var(--spring-bounce), background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .option-item:active {
+      transform: scale(0.98);
     }
 
     .option-item input {
-      margin-top: 2px;
+      margin-top: 3px;
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
       accent-color: var(--ios-blue);
     }
 
     .option-title {
-      font-size: 13px;
+      font-size: 13.5px;
       font-weight: 600;
       display: block;
     }
 
     .option-desc {
-      font-size: 11.5px;
+      font-size: 12px;
       color: var(--text-secondary);
       display: block;
       margin-top: 2px;
@@ -837,29 +1157,33 @@
 
     .sheet-actions {
       display: flex;
-      gap: 8px;
+      gap: 9px;
       margin-top: 2px;
     }
 
     .ios-btn {
       border: none;
-      border-radius: 14px;
-      padding: 11px 14px;
-      font-size: 13.5px;
+      border-radius: 15px;
+      min-height: 46px;
+      padding: 11px 16px;
+      font-size: 14px;
       font-weight: 600;
       font-family: inherit;
       cursor: pointer;
-      transition: transform 0.14s ease;
+      user-select: none;
+      transition: transform 0.28s var(--spring-bounce), background 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
     }
 
+    .ios-btn.is-pressed,
     .ios-btn:active {
-      transform: scale(0.97);
+      transform: scale(0.95);
     }
 
     .ios-btn.primary {
       background: var(--ios-blue);
       color: #ffffff;
       flex: 1;
+      box-shadow: 0 4px 14px rgba(0, 122, 255, 0.25);
     }
 
     .ios-btn.secondary {
@@ -869,7 +1193,7 @@
     }
 
     .ios-btn.danger {
-      background: rgba(255, 59, 48, 0.12);
+      background: rgba(255, 59, 48, 0.13);
       color: var(--ios-red);
     }
 
@@ -878,26 +1202,119 @@
       position: fixed;
       top: max(14px, env(safe-area-inset-top));
       left: 50%;
-      transform: translateX(-50%) translateY(-20px) scale(0.95);
+      transform: translateX(-50%) translateY(-24px) scale(0.92);
       background: var(--toast-bg);
       color: var(--toast-text);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
-      padding: 9px 16px;
+      padding: 10px 18px;
       border-radius: 999px;
       font-size: 13px;
       font-weight: 500;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.22s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+      transition: opacity 0.22s ease, transform 0.36s var(--spring-bounce);
       z-index: 80;
       white-space: nowrap;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.2);
     }
 
     .toast.show {
       opacity: 1;
       transform: translateX(-50%) translateY(0) scale(1);
+    }
+
+    /* Fullscreen Glass Shatter Canvas Overlay */
+    #shatterCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      pointer-events: none;
+      z-index: 120;
+      display: none;
+    }
+
+    /* Desktop Pointer Hover Effects (Never Stuck on Touch Devices) */
+    @media (hover: hover) and (pointer: fine) {
+      .brand:hover .app-logo {
+        transform: scale(1.07) rotate(-4deg);
+        filter: drop-shadow(0 8px 16px rgba(0, 102, 229, 0.34));
+      }
+      .brand:hover h1 {
+        color: var(--ios-blue);
+      }
+
+      .pill-btn:hover {
+        background: var(--glass-hover);
+        border-color: var(--glass-border-hover);
+        box-shadow: var(--glass-shadow-hover);
+        transform: translateY(-1.5px);
+      }
+      .pill-btn:hover svg {
+        transform: rotate(18deg) scale(1.08);
+      }
+      .pill-btn:active {
+        transform: scale(0.93);
+      }
+
+      .open-web-btn:hover {
+        transform: translateY(-1.5px);
+        filter: brightness(1.05);
+      }
+
+      .act-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+        filter: brightness(1.04);
+      }
+      .act-btn:hover::before {
+        transform: translateX(130%);
+      }
+      .act-btn:active {
+        transform: scale(0.95);
+      }
+
+      .tile:hover {
+        background: var(--glass-hover);
+        border-color: var(--glass-border-hover);
+        transform: translateY(-1.5px);
+      }
+
+      .edit-link:hover,
+      .text-btn:hover {
+        transform: translateY(-1px);
+      }
+      .edit-link:hover::after,
+      .text-btn:hover::after {
+        transform: scaleX(1);
+      }
+
+      .log-chip:hover {
+        background: var(--glass-hover);
+        border-color: var(--glass-border-hover);
+        transform: translateY(-1.5px);
+      }
+
+      .ios-btn:hover {
+        transform: translateY(-1.5px);
+        filter: brightness(1.05);
+      }
+      .ios-btn:active {
+        transform: scale(0.95);
+      }
+
+      .close-circle:hover {
+        background: var(--ios-blue-tint);
+        color: var(--ios-blue);
+        transform: rotate(90deg);
+      }
+
+      .option-item:hover {
+        background: var(--glass-hover);
+        border-color: var(--glass-border-hover);
+      }
     }
 
     .hidden {
@@ -907,11 +1324,13 @@
 </head>
 <body>
 
-  <main class="app">
+  <canvas id="shatterCanvas" aria-hidden="true"></canvas>
+
+  <main class="app" id="appRoot">
 
     <!-- Top Bar -->
-    <header class="topbar">
-      <div class="brand">
+    <header class="topbar stagger-in stagger-1">
+      <div class="brand" id="brandLogo" onclick="bounceLogo()">
         <svg class="app-logo" viewBox="0 0 64 64" fill="none" aria-hidden="true">
           <defs>
             <linearGradient id="attLogoBg" x1="8" y1="4" x2="56" y2="60" gradientUnits="userSpaceOnUse">
@@ -935,13 +1354,13 @@
         </div>
       </div>
       <div class="top-pills">
-        <button class="pill-btn" onclick="openSettingsModal()">
+        <button class="pill-btn ripple-host" onclick="openSettingsModal()">
           <span id="settingsDot" class="dot-blue hidden"></span>
           Work Portal
         </button>
-        <button class="pill-btn" onclick="openBackupModal()">Report</button>
-        <button class="pill-btn icon-only" onclick="toggleTheme()" id="themeBtn" title="Switch light or dark theme" aria-label="Toggle theme">
-          <svg id="themeIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <button class="pill-btn ripple-host" onclick="openBackupModal()">Report</button>
+        <button class="pill-btn icon-only ripple-host" onclick="toggleTheme(event)" id="themeBtn" title="Switch light or dark theme" aria-label="Toggle theme">
+          <svg id="themeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
           </svg>
         </button>
@@ -955,11 +1374,11 @@
           <div class="return-title" id="returnBannerTitle">Finished face scan on work portal?</div>
           <div class="return-desc" id="returnBannerDesc">Tap below to save your timestamp now.</div>
         </div>
-        <button class="close-circle" onclick="dismissReturnBanner()">×</button>
+        <button class="close-circle" onclick="dismissReturnBanner()" aria-label="Close">×</button>
       </div>
       <div class="sheet-actions">
-        <button id="btnConfirmReturnAction" class="ios-btn primary" onclick="confirmReturnLog()">Save Now</button>
-        <button class="ios-btn secondary" onclick="dismissReturnBanner()">Later</button>
+        <button id="btnConfirmReturnAction" class="ios-btn primary ripple-host" onclick="confirmReturnLog()">Save Now</button>
+        <button class="ios-btn secondary ripple-host" onclick="dismissReturnBanner()">Later</button>
       </div>
     </div>
 
@@ -969,11 +1388,11 @@
         <div class="portal-name" id="portalLabelDisplay">Work Attendance Portal</div>
         <div class="portal-url" id="portalUrlDisplay">https://...</div>
       </div>
-      <button class="open-web-btn" onclick="openPortalDirectly()">Open Web ↗</button>
+      <button class="open-web-btn ripple-host" onclick="openPortalDirectly()">Open Web ↗</button>
     </div>
 
     <!-- Main iPhone Glass Widget -->
-    <section class="glass widget">
+    <section class="glass widget stagger-in stagger-2">
       <div class="widget-header">
         <div>
           <div class="date-day" id="todayDayName">Today</div>
@@ -1002,7 +1421,7 @@
 
       <!-- Time Tiles -->
       <div class="tiles">
-        <div class="tile">
+        <div class="tile" id="tileIn">
           <div class="tile-top">
             <span>Check In</span>
             <button id="editInBtn" class="edit-link hidden" onclick="openEditModal('in')">Edit</button>
@@ -1010,7 +1429,7 @@
           <div id="todayInTime" class="tile-time nums">--:--</div>
         </div>
 
-        <div class="tile">
+        <div class="tile" id="tileOut">
           <div class="tile-top">
             <span>Check Out</span>
             <button id="editOutBtn" class="edit-link hidden" onclick="openEditModal('out')">Edit</button>
@@ -1021,12 +1440,12 @@
 
       <!-- Primary Actions -->
       <div class="actions">
-        <button class="act-btn in" onclick="handleAttendanceAction('in')">
+        <button class="act-btn in ripple-host" onclick="handleAttendanceAction('in')">
           <span class="act-label">Check In</span>
           <span class="act-hint" id="btnCheckInSub">Save current time</span>
         </button>
 
-        <button class="act-btn out" onclick="handleAttendanceAction('out')">
+        <button class="act-btn out ripple-host" onclick="handleAttendanceAction('out')">
           <span class="act-label">Check Out</span>
           <span class="act-hint" id="btnCheckOutSub">Save current time</span>
         </button>
@@ -1037,7 +1456,7 @@
     </section>
 
     <!-- Monthly Stats -->
-    <section class="glass stats-strip">
+    <section class="glass stats-strip stagger-in stagger-3">
       <div class="stat-col">
         <div class="stat-val nums" id="statTotalDays">0</div>
         <div class="stat-lbl">Present</div>
@@ -1053,7 +1472,7 @@
     </section>
 
     <!-- History Section -->
-    <section class="glass history">
+    <section class="glass history stagger-in stagger-4">
       <div class="history-head">
         <span class="history-title">History</span>
         <button class="text-btn" onclick="openManualAddModal()">+ Add</button>
@@ -1061,11 +1480,13 @@
 
       <div class="filter-bar">
         <input type="month" id="filterMonth" class="month-input" onchange="renderLogs()" />
-        <button class="pill-btn" style="height: 32px; font-size: 12px;" onclick="resetFilter()">All</button>
-        <button class="pill-btn" style="height: 32px; font-size: 12px; margin-left: auto;" onclick="openInstallModal()">Install App</button>
+        <button class="pill-btn ripple-host" style="min-height: 36px; font-size: 12px;" onclick="resetFilter()">All</button>
+        <button class="pill-btn ripple-host" style="min-height: 36px; font-size: 12px; margin-left: auto;" onclick="openInstallModal()">Install App</button>
       </div>
 
-      <div id="logListContainer" class="log-list"></div>
+      <div id="logListContainer" class="log-list">
+        <div id="logListInner" class="log-list-inner"></div>
+      </div>
     </section>
 
   </main>
@@ -1074,21 +1495,21 @@
   <div id="toast" class="toast">Saved</div>
 
   <!-- MODAL: WORK PORTAL SETTINGS -->
-  <div id="settingsModal" class="sheet-backdrop hidden" onclick="backdropClose(event, 'settingsModal')">
+  <div id="settingsModal" class="sheet-backdrop" role="dialog" aria-modal="true" aria-hidden="true" onclick="backdropClose(event, 'settingsModal')">
     <div class="sheet">
-      <div class="grabber"></div>
+      <div class="grabber-area"><div class="grabber"></div></div>
       <div class="sheet-head">
         <span class="sheet-title">Work Attendance Portal</span>
-        <button class="close-circle" onclick="closeModal('settingsModal')">×</button>
+        <button class="close-circle" onclick="closeModal('settingsModal')" aria-label="Close">×</button>
       </div>
 
       <div class="field">
-        <label>Portal Name</label>
+        <label for="settingPortalName">Portal Name</label>
         <input type="text" id="settingPortalName" placeholder="e.g., Office HR Portal" />
       </div>
 
       <div class="field">
-        <label>Attendance Page URL</label>
+        <label for="settingPortalUrl">Attendance Page URL</label>
         <input type="url" id="settingPortalUrl" placeholder="https://attendance.company.com" />
         <span class="hint-text">The browser link you use for daily check-in and face scan.</span>
       </div>
@@ -1096,7 +1517,7 @@
       <div class="field">
         <label>Button Behavior</label>
         <div class="option-list">
-          <label class="option-item">
+          <label class="option-item ripple-host">
             <input type="radio" name="workflowMode" value="log_and_open" checked />
             <div>
               <span class="option-title">Log time first, then open portal</span>
@@ -1104,7 +1525,7 @@
             </div>
           </label>
 
-          <label class="option-item">
+          <label class="option-item ripple-host">
             <input type="radio" name="workflowMode" value="open_then_confirm" />
             <div>
               <span class="option-title">Open portal first, confirm on return</span>
@@ -1112,7 +1533,7 @@
             </div>
           </label>
 
-          <label class="option-item">
+          <label class="option-item ripple-host">
             <input type="radio" name="workflowMode" value="separate_shortcut" />
             <div>
               <span class="option-title">Separate shortcut only</span>
@@ -1123,83 +1544,83 @@
       </div>
 
       <div class="sheet-actions">
-        <button class="ios-btn danger" onclick="clearPortalSettings()">Clear</button>
-        <button class="ios-btn primary" onclick="savePortalSettings()">Save</button>
+        <button class="ios-btn danger ripple-host" onclick="clearPortalSettings()">Clear</button>
+        <button class="ios-btn primary ripple-host" onclick="savePortalSettings()">Save</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: EDIT TIME -->
-  <div id="editModal" class="sheet-backdrop hidden" onclick="backdropClose(event, 'editModal')">
+  <div id="editModal" class="sheet-backdrop" role="dialog" aria-modal="true" aria-hidden="true" onclick="backdropClose(event, 'editModal')">
     <div class="sheet">
-      <div class="grabber"></div>
+      <div class="grabber-area"><div class="grabber"></div></div>
       <div class="sheet-head">
         <span class="sheet-title" id="editModalTitle">Edit Time</span>
-        <button class="close-circle" onclick="closeModal('editModal')">×</button>
+        <button class="close-circle" onclick="closeModal('editModal')" aria-label="Close">×</button>
       </div>
       <input type="hidden" id="editDateKey" />
       <input type="hidden" id="editType" />
 
       <div class="field">
-        <label>Time</label>
+        <label for="editTimeInput">Time</label>
         <input type="time" step="1" id="editTimeInput" class="nums" />
       </div>
 
       <div class="field">
-        <label>Note</label>
+        <label for="editNoteInput">Note</label>
         <input type="text" id="editNoteInput" placeholder="Additional details..." />
       </div>
 
       <div class="sheet-actions">
-        <button class="ios-btn danger" onclick="deleteSpecificPunch()">Delete Time</button>
-        <button class="ios-btn primary" onclick="saveEditedTime()">Save</button>
+        <button class="ios-btn danger ripple-host" onclick="deleteSpecificPunch()">Delete Time</button>
+        <button class="ios-btn primary ripple-host" onclick="saveEditedTime()">Save</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: ADD MANUAL ENTRY -->
-  <div id="manualAddModal" class="sheet-backdrop hidden" onclick="backdropClose(event, 'manualAddModal')">
+  <div id="manualAddModal" class="sheet-backdrop" role="dialog" aria-modal="true" aria-hidden="true" onclick="backdropClose(event, 'manualAddModal')">
     <div class="sheet">
-      <div class="grabber"></div>
+      <div class="grabber-area"><div class="grabber"></div></div>
       <div class="sheet-head">
         <span class="sheet-title">Add Manual Entry</span>
-        <button class="close-circle" onclick="closeModal('manualAddModal')">×</button>
+        <button class="close-circle" onclick="closeModal('manualAddModal')" aria-label="Close">×</button>
       </div>
 
       <div class="field">
-        <label>Date</label>
+        <label for="manualDate">Date</label>
         <input type="date" id="manualDate" />
       </div>
 
       <div class="tiles" style="margin-bottom: 0;">
         <div class="field">
-          <label>Check In</label>
+          <label for="manualIn">Check In</label>
           <input type="time" step="1" id="manualIn" class="nums" />
         </div>
         <div class="field">
-          <label>Check Out</label>
+          <label for="manualOut">Check Out</label>
           <input type="time" step="1" id="manualOut" class="nums" />
         </div>
       </div>
 
       <div class="field">
-        <label>Note</label>
+        <label for="manualNote">Note</label>
         <input type="text" id="manualNote" placeholder="e.g., Scanned face earlier, forgot to log" />
       </div>
 
-      <button class="ios-btn primary" onclick="saveManualLog()">Save Entry</button>
+      <button class="ios-btn primary ripple-host" onclick="saveManualLog()">Save Entry</button>
     </div>
   </div>
 
   <!-- MODAL: INSTALL APP -->
-  <div id="installModal" class="sheet-backdrop hidden" onclick="backdropClose(event, 'installModal')">
+  <div id="installModal" class="sheet-backdrop" role="dialog" aria-modal="true" aria-hidden="true" onclick="backdropClose(event, 'installModal')">
     <div class="sheet">
-      <div class="grabber"></div>
+      <div class="grabber-area"><div class="grabber"></div></div>
       <div class="sheet-head">
         <span class="sheet-title">Add to Home Screen</span>
-        <button class="close-circle" onclick="closeModal('installModal')">×</button>
+        <button class="close-circle" onclick="closeModal('installModal')" aria-label="Close">×</button>
       </div>
-      <p class="hint-text" style="font-size: 13px; color: var(--text);">
+      <p class="hint-text" style="font-size: 13.5px; color: var(--text);">
         1. Open this page in <strong>Google Chrome</strong> on your phone.<br>
         2. Tap the <strong>three dots (⋮)</strong> menu in the top-right corner.<br>
         3. Select <strong>Add to Home screen</strong> (or <strong>Install app</strong>).<br>
@@ -1208,28 +1629,28 @@
       <p class="hint-text">
         Logs are stored locally in your browser and persist across device restarts. Avoid clearing Chrome Site Data for this page.
       </p>
-      <button class="ios-btn primary" onclick="closeModal('installModal')">Done</button>
+      <button class="ios-btn primary ripple-host" onclick="closeModal('installModal')">Done</button>
     </div>
   </div>
 
   <!-- MODAL: REPORT & BACKUP -->
-  <div id="backupModal" class="sheet-backdrop hidden" onclick="backdropClose(event, 'backupModal')">
+  <div id="backupModal" class="sheet-backdrop" role="dialog" aria-modal="true" aria-hidden="true" onclick="backdropClose(event, 'backupModal')">
     <div class="sheet">
-      <div class="grabber"></div>
+      <div class="grabber-area"><div class="grabber"></div></div>
       <div class="sheet-head">
         <span class="sheet-title">Report &amp; Backup</span>
-        <button class="close-circle" onclick="closeModal('backupModal')">×</button>
+        <button class="close-circle" onclick="closeModal('backupModal')" aria-label="Close">×</button>
       </div>
       <p class="hint-text">
         Export an Excel report with <strong>Sheet 1 in Korea Time (KST, UTC+9)</strong> and <strong>Sheet 2 in Indonesia Time (WIB, UTC+7)</strong>, or download a JSON backup.
       </p>
       <div class="sheet-actions">
-        <button class="ios-btn primary" onclick="exportExcelReport()">Excel Report (.XLSX)</button>
-        <button class="ios-btn secondary" onclick="exportJSON()">Backup (.JSON)</button>
+        <button class="ios-btn primary ripple-host" onclick="exportExcelReport()">Excel Report (.XLSX)</button>
+        <button class="ios-btn secondary ripple-host" onclick="exportJSON()">Backup (.JSON)</button>
       </div>
       <div class="field" style="border-top: 0.5px solid var(--glass-hairline); padding-top: 12px;">
-        <label>Restore from .JSON backup</label>
-        <input type="file" id="importFileInput" accept=".json" onchange="importJSON(event)" style="font-size: 12.5px;" />
+        <label for="importFileInput">Restore from .JSON backup</label>
+        <input type="file" id="importFileInput" accept=".json" onchange="importJSON(event)" style="font-size: 13px;" />
       </div>
     </div>
   </div>
@@ -1240,6 +1661,8 @@
     const THEME_KEY = 'cek_absenku_theme_v1';
 
     let pendingPortalAction = null;
+    let isShattering = false;
+    let openModalId = null;
 
     const DAYS_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const MONTHS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -1248,6 +1671,63 @@
       navigator.storage.persist().catch(() => {});
     }
 
+    function haptic(pattern = 10) {
+      try {
+        if (navigator.vibrate) navigator.vibrate(pattern);
+      } catch (e) {}
+    }
+
+    function triggerPop(el) {
+      if (!el) return;
+      el.classList.remove('pop-animate');
+      void el.offsetWidth;
+      el.classList.add('pop-animate');
+    }
+
+    function bounceLogo() {
+      haptic(8);
+      const logo = document.querySelector('.app-logo');
+      triggerPop(logo);
+    }
+
+    /* =====================================================================
+       TOUCH RIPPLE & TACTILE POINTER FEEDBACK
+       ===================================================================== */
+    function initTouchFeedback() {
+      document.addEventListener('pointerdown', (e) => {
+        const host = e.target.closest('.ripple-host');
+        if (host) {
+          const rect = host.getBoundingClientRect();
+          const size = Math.max(rect.width, rect.height) * 2.1;
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const ripple = document.createElement('span');
+          ripple.className = 'touch-ripple';
+          ripple.style.width = `${size}px`;
+          ripple.style.height = `${size}px`;
+          ripple.style.left = `${x}px`;
+          ripple.style.top = `${y}px`;
+          host.appendChild(ripple);
+          setTimeout(() => ripple.remove(), 540);
+        }
+
+        const pressable = e.target.closest('.pill-btn, .act-btn, .ios-btn, .open-web-btn, .log-chip, .edit-link, .text-btn, .brand');
+        if (pressable) {
+          pressable.classList.add('is-pressed');
+          const clearPress = () => {
+            pressable.classList.remove('is-pressed');
+            window.removeEventListener('pointerup', clearPress);
+            window.removeEventListener('pointercancel', clearPress);
+          };
+          window.addEventListener('pointerup', clearPress, { once: true });
+          window.addEventListener('pointercancel', clearPress, { once: true });
+        }
+      }, { passive: true });
+    }
+
+    /* =====================================================================
+       GLASS SHATTER THEME TRANSITION (LIGHT <-> DARK)
+       ===================================================================== */
     function applyTheme(theme) {
       const root = document.documentElement;
       const meta = document.getElementById('metaThemeColor');
@@ -1277,13 +1757,565 @@
       }
     }
 
-    function toggleTheme() {
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      const next = isDark ? 'light' : 'dark';
-      try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
-      applyTheme(next);
+    function buildGlassShards(w, h, ox, oy, fromTheme) {
+      const maxR = Math.hypot(Math.max(ox, w - ox), Math.max(oy, h - oy)) + 48;
+      const spokes = 12;
+      const ringFracs = [0.06, 0.17, 0.33, 0.54, 0.78, 1.04];
+
+      // Build jittered concentric ring vertices
+      const rings = [];
+      for (let r = 0; r < ringFracs.length; r++) {
+        const pts = [];
+        const baseRad = maxR * ringFracs[r];
+        for (let s = 0; s < spokes; s++) {
+          const baseAng = (s / spokes) * Math.PI * 2;
+          const angJitter = (Math.random() - 0.5) * (Math.PI * 2 / spokes) * 0.42;
+          const radJitter = baseRad * (0.84 + Math.random() * 0.32);
+          pts.push({
+            x: ox + Math.cos(baseAng + angJitter) * radJitter,
+            y: oy + Math.sin(baseAng + angJitter) * radJitter
+          });
+        }
+        rings.push(pts);
+      }
+
+      const shards = [];
+      const lightPalette = [
+        [236, 244, 252],
+        [218, 232, 246],
+        [244, 248, 253],
+        [226, 235, 245],
+        [242, 234, 228]
+      ];
+      const darkPalette = [
+        [26, 36, 52],
+        [34, 46, 66],
+        [20, 29, 44],
+        [44, 58, 80],
+        [36, 42, 58]
+      ];
+      const palette = fromTheme === 'dark' ? darkPalette : lightPalette;
+
+      function pushTri(p1, p2, p3) {
+        const cx = (p1.x + p2.x + p3.x) / 3;
+        const cy = (p1.y + p2.y + p3.y) / 3;
+        const dx = cx - ox;
+        const dy = cy - oy;
+        const dist = Math.hypot(dx, dy) || 1;
+        const nx = dx / dist;
+        const ny = dy / dist;
+        const distRatio = Math.min(1, dist / maxR);
+
+        const baseSpeed = 140 + (1 - distRatio) * 320 + Math.random() * 140;
+        const col = palette[Math.floor(Math.random() * palette.length)];
+
+        shards.push({
+          pts: [
+            { x: p1.x - cx, y: p1.y - cy },
+            { x: p2.x - cx, y: p2.y - cy },
+            { x: p3.x - cx, y: p3.y - cy }
+          ],
+          cx,
+          cy,
+          x: cx,
+          y: cy,
+          vx: nx * baseSpeed + (Math.random() - 0.5) * 110,
+          vy: ny * baseSpeed - (80 + Math.random() * 120),
+          rot: 0,
+          vRot: (Math.random() - 0.5) * 5.8,
+          tilt: Math.random() * Math.PI * 2,
+          vTilt: (Math.random() > 0.5 ? 1 : -1) * (3.2 + Math.random() * 5.2),
+          delay: distRatio * 85,
+          dist,
+          rgb: col,
+          alphaBase: fromTheme === 'dark' ? (0.76 + Math.random() * 0.16) : (0.74 + Math.random() * 0.18),
+          specular: 0.4 + Math.random() * 0.6
+        });
+      }
+
+      // Inner fan triangles around impact point
+      const center = { x: ox, y: oy };
+      for (let s = 0; s < spokes; s++) {
+        const nextS = (s + 1) % spokes;
+        pushTri(center, rings[0][s], rings[0][nextS]);
+      }
+
+      // Outer ring quads split into 2 crisp glass triangles
+      for (let r = 0; r < rings.length - 1; r++) {
+        for (let s = 0; s < spokes; s++) {
+          const nextS = (s + 1) % spokes;
+          const a = rings[r][s];
+          const b = rings[r][nextS];
+          const c = rings[r + 1][nextS];
+          const d = rings[r + 1][s];
+          if ((r + s) % 2 === 0) {
+            pushTri(a, b, c);
+            pushTri(a, c, d);
+          } else {
+            pushTri(a, b, d);
+            pushTri(b, c, d);
+          }
+        }
+      }
+
+      return { shards, maxR };
     }
 
+    function runGlassShatterTransition(originX, originY, fromTheme, onBreak) {
+      const canvas = document.getElementById('shatterCanvas');
+      if (!canvas) {
+        onBreak();
+        return;
+      }
+
+      isShattering = true;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
+      canvas.style.display = 'block';
+
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const { shards, maxR } = buildGlassShards(w, h, originX, originY, fromTheme);
+      const appRoot = document.getElementById('appRoot');
+      if (appRoot) {
+        appRoot.classList.remove('shatter-jolt');
+        void appRoot.offsetWidth;
+        appRoot.classList.add('shatter-jolt');
+      }
+
+      haptic([14, 22, 12]);
+
+      const CRACK_DURATION = 115;
+      const SHATTER_DURATION = 780;
+      const TOTAL_DURATION = CRACK_DURATION + SHATTER_DURATION;
+      const startTime = performance.now();
+      let swapped = false;
+
+      const isFromDark = fromTheme === 'dark';
+
+      function frame(now) {
+        const elapsed = now - startTime;
+        ctx.clearRect(0, 0, w, h);
+
+        if (elapsed < CRACK_DURATION) {
+          // Phase 1: Glass frost sheet + rapid spiderweb crack propagation
+          const p = elapsed / CRACK_DURATION;
+          const easeP = 1 - Math.pow(1 - p, 3);
+          const crackRadius = maxR * easeP * 1.15;
+
+          // Subtle frosted pane holding old theme tint
+          ctx.fillStyle = isFromDark
+            ? `rgba(16, 24, 36, ${0.72 * (1 - p * 0.15)})`
+            : `rgba(232, 241, 250, ${0.72 * (1 - p * 0.15)})`;
+          ctx.fillRect(0, 0, w, h);
+
+          // Draw fracture lines expanding outward
+          ctx.save();
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          for (let i = 0; i < shards.length; i++) {
+            const sh = shards[i];
+            if (sh.dist > crackRadius) continue;
+            ctx.beginPath();
+            ctx.moveTo(sh.cx + sh.pts[0].x, sh.cy + sh.pts[0].y);
+            ctx.lineTo(sh.cx + sh.pts[1].x, sh.cy + sh.pts[1].y);
+            ctx.lineTo(sh.cx + sh.pts[2].x, sh.cy + sh.pts[2].y);
+            ctx.closePath();
+            ctx.strokeStyle = isFromDark
+              ? `rgba(195, 228, 255, ${0.65 * easeP})`
+              : `rgba(255, 255, 255, ${0.92 * easeP})`;
+            ctx.lineWidth = 1.25;
+            ctx.stroke();
+          }
+
+          // Bright impact flash at tap origin
+          const flashR = 26 + easeP * 85;
+          const grad = ctx.createRadialGradient(originX, originY, 0, originX, originY, flashR);
+          grad.addColorStop(0, `rgba(255, 255, 255, ${0.88 * (1 - p * 0.4)})`);
+          grad.addColorStop(0.45, isFromDark
+            ? `rgba(110, 185, 255, ${0.42 * (1 - p * 0.4)})`
+            : `rgba(255, 255, 255, ${0.48 * (1 - p * 0.5)})`);
+          grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(originX, originY, flashR, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        } else {
+          // Phase 2: Reveal new theme underneath as shards explode and fall away
+          if (!swapped) {
+            swapped = true;
+            onBreak();
+          }
+
+          const sElapsed = elapsed - CRACK_DURATION;
+          const gravity = 1580;
+
+          for (let i = 0; i < shards.length; i++) {
+            const sh = shards[i];
+            const localMs = Math.max(0, sElapsed - sh.delay);
+            const t = localMs / 1000;
+            const life = Math.min(1, localMs / (SHATTER_DURATION - sh.delay * 0.5));
+            if (life >= 1) continue;
+
+            const px = sh.cx + sh.vx * t;
+            const py = sh.cy + sh.vy * t + 0.5 * gravity * t * t;
+            const rot = sh.vRot * t;
+            const tiltScale = 0.25 + 0.75 * Math.abs(Math.cos(sh.tilt + sh.vTilt * t));
+            const fade = life < 0.55 ? 1 : 1 - (life - 0.55) / 0.45;
+            const alpha = sh.alphaBase * fade;
+            if (alpha <= 0.01) continue;
+
+            ctx.save();
+            ctx.translate(px, py);
+            ctx.rotate(rot);
+            ctx.scale(1, tiltScale);
+
+            ctx.beginPath();
+            ctx.moveTo(sh.pts[0].x, sh.pts[0].y);
+            ctx.lineTo(sh.pts[1].x, sh.pts[1].y);
+            ctx.lineTo(sh.pts[2].x, sh.pts[2].y);
+            ctx.closePath();
+
+            // Specular glint catches light as shard tumbles
+            const glint = Math.pow(Math.abs(Math.sin(sh.tilt + sh.vTilt * t * 1.4)), 4) * sh.specular;
+            const rCol = Math.min(255, Math.round(sh.rgb[0] + glint * 75));
+            const gCol = Math.min(255, Math.round(sh.rgb[1] + glint * 82));
+            const bCol = Math.min(255, Math.round(sh.rgb[2] + glint * 95));
+
+            ctx.fillStyle = `rgba(${rCol}, ${gCol}, ${bCol}, ${alpha})`;
+            ctx.fill();
+
+            // Crisp frosted glass rim highlight
+            ctx.strokeStyle = isFromDark
+              ? `rgba(180, 222, 255, ${Math.min(0.85, (0.35 + glint * 0.5) * fade)})`
+              : `rgba(255, 255, 255, ${Math.min(0.95, (0.72 + glint * 0.28) * fade)})`;
+            ctx.lineWidth = 1.1;
+            ctx.stroke();
+
+            ctx.restore();
+          }
+        }
+
+        if (elapsed < TOTAL_DURATION) {
+          requestAnimationFrame(frame);
+        } else {
+          ctx.clearRect(0, 0, w, h);
+          canvas.style.display = 'none';
+          isShattering = false;
+        }
+      }
+
+      requestAnimationFrame(frame);
+    }
+
+    function toggleTheme(event) {
+      if (isShattering) return;
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const fromTheme = isDark ? 'dark' : 'light';
+      const next = isDark ? 'light' : 'dark';
+
+      let ox = window.innerWidth - 36;
+      let oy = 36;
+      const btn = document.getElementById('themeBtn');
+      if (event && typeof event.clientX === 'number' && event.clientX > 0) {
+        ox = event.clientX;
+        oy = event.clientY;
+      } else if (btn) {
+        const rect = btn.getBoundingClientRect();
+        ox = rect.left + rect.width / 2;
+        oy = rect.top + rect.height / 2;
+      }
+
+      runGlassShatterTransition(ox, oy, fromTheme, () => {
+        try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+        applyTheme(next);
+      });
+    }
+
+    /* =====================================================================
+       BOUNCY OVERSCROLL / RUBBER-BAND PHYSICS (LIST & MAIN PAGE)
+       ===================================================================== */
+    function rubberDamp(delta, maxPull = 54, factor = 135) {
+      return Math.sign(delta) * maxPull * (1 - Math.exp(-Math.abs(delta) / factor));
+    }
+
+    function initBouncyHistoryList() {
+      const container = document.getElementById('logListContainer');
+      const inner = document.getElementById('logListInner');
+      if (!container || !inner) return;
+
+      let startY = 0;
+      let pulling = false;
+      let pullOffset = 0;
+      let hapticFired = false;
+      let wheelResetTimer = null;
+      let wheelAccum = 0;
+
+      function applyListBounce(offset, animateBack = false) {
+        const rows = inner.querySelectorAll('.log-row');
+        if (animateBack) {
+          inner.style.transition = 'transform 0.56s cubic-bezier(0.22, 1.38, 0.36, 1)';
+          inner.style.transform = 'translate3d(0, 0, 0)';
+          rows.forEach((row) => {
+            row.style.transition = 'transform 0.58s cubic-bezier(0.22, 1.36, 0.36, 1)';
+            row.style.transform = 'translate3d(0, 0, 0)';
+          });
+        } else {
+          inner.style.transition = 'none';
+          inner.style.transform = `translate3d(0, ${offset.toFixed(1)}px, 0)`;
+          // Subtle elastic accordion stretch per row
+          const count = Math.min(rows.length, 10);
+          for (let i = 0; i < count; i++) {
+            const idx = offset > 0 ? i : (rows.length - 1 - i);
+            if (!rows[idx]) continue;
+            const weight = (i + 1) * 0.14;
+            rows[idx].style.transition = 'none';
+            rows[idx].style.transform = `translate3d(0, ${(offset * weight * 0.38).toFixed(1)}px, 0)`;
+          }
+        }
+      }
+
+      container.addEventListener('touchstart', (e) => {
+        if (e.touches.length !== 1) return;
+        startY = e.touches[0].clientY;
+        pulling = false;
+        pullOffset = 0;
+        hapticFired = false;
+        inner.style.transition = 'none';
+      }, { passive: true });
+
+      container.addEventListener('touchmove', (e) => {
+        if (e.touches.length !== 1) return;
+        const currY = e.touches[0].clientY;
+        const dy = currY - startY;
+        const atTop = container.scrollTop <= 0;
+        const atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 1;
+
+        if ((atTop && dy > 0) || (atBottom && dy < 0)) {
+          if (!pulling) {
+            pulling = true;
+            startY = currY;
+          }
+          const delta = currY - startY;
+          if ((atTop && delta > 0) || (atBottom && delta < 0)) {
+            if (e.cancelable) e.preventDefault();
+            pullOffset = rubberDamp(delta, 56, 130);
+            applyListBounce(pullOffset, false);
+            if (!hapticFired && Math.abs(pullOffset) > 34) {
+              hapticFired = true;
+              haptic(8);
+            }
+          }
+        }
+      }, { passive: false });
+
+      function endTouch() {
+        if (pulling || pullOffset !== 0) {
+          applyListBounce(0, true);
+          pulling = false;
+          pullOffset = 0;
+        }
+      }
+
+      container.addEventListener('touchend', endTouch, { passive: true });
+      container.addEventListener('touchcancel', endTouch, { passive: true });
+
+      // Desktop mouse-wheel edge bounce
+      container.addEventListener('wheel', (e) => {
+        const atTop = container.scrollTop <= 0;
+        const atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 1;
+        if ((atTop && e.deltaY < 0) || (atBottom && e.deltaY > 0)) {
+          wheelAccum = Math.max(-160, Math.min(160, wheelAccum - e.deltaY * 0.45));
+          const offset = rubberDamp(wheelAccum, 34, 95);
+          applyListBounce(offset, false);
+          clearTimeout(wheelResetTimer);
+          wheelResetTimer = setTimeout(() => {
+            wheelAccum = 0;
+            applyListBounce(0, true);
+          }, 110);
+        }
+      }, { passive: true });
+    }
+
+    function initPageRubberBand() {
+      const app = document.getElementById('appRoot');
+      if (!app) return;
+
+      let startY = 0;
+      let active = false;
+      let offset = 0;
+
+      window.addEventListener('touchstart', (e) => {
+        if (openModalId || e.touches.length !== 1) return;
+        if (e.target.closest('#logListContainer')) return;
+        startY = e.touches[0].clientY;
+        active = false;
+        offset = 0;
+        app.style.transition = 'none';
+      }, { passive: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (openModalId || e.touches.length !== 1) return;
+        if (e.target.closest('#logListContainer')) return;
+        const currY = e.touches[0].clientY;
+        const dy = currY - startY;
+        const docH = document.documentElement.scrollHeight;
+        const winH = window.innerHeight;
+        const atTop = window.scrollY <= 0;
+        const atBottom = window.scrollY + winH >= docH - 2;
+
+        if ((atTop && dy > 0) || (atBottom && dy < 0)) {
+          if (!active) {
+            active = true;
+            startY = currY;
+          }
+          const delta = currY - startY;
+          if ((atTop && delta > 0) || (atBottom && delta < 0)) {
+            if (e.cancelable) e.preventDefault();
+            offset = rubberDamp(delta, 46, 150);
+            app.style.transition = 'none';
+            app.style.transform = `translate3d(0, ${offset.toFixed(1)}px, 0)`;
+          }
+        }
+      }, { passive: false });
+
+      function endPageTouch() {
+        if (active || offset !== 0) {
+          app.style.transition = 'transform 0.54s cubic-bezier(0.22, 1.34, 0.36, 1)';
+          app.style.transform = 'translate3d(0, 0, 0)';
+          active = false;
+          offset = 0;
+        }
+      }
+
+      window.addEventListener('touchend', endPageTouch, { passive: true });
+      window.addEventListener('touchcancel', endPageTouch, { passive: true });
+    }
+
+    /* =====================================================================
+       ANIMATED MODAL SHEETS + SWIPE DOWN TO DISMISS
+       ===================================================================== */
+    function openModal(id) {
+      const backdrop = document.getElementById(id);
+      if (!backdrop) return;
+      const sheet = backdrop.querySelector('.sheet');
+      if (sheet) {
+        sheet.classList.remove('is-dragging');
+        sheet.style.transform = '';
+      }
+      backdrop.style.opacity = '';
+      backdrop.setAttribute('aria-hidden', 'false');
+      backdrop.classList.add('is-open');
+      document.body.classList.add('modal-open');
+      openModalId = id;
+      haptic(8);
+    }
+
+    function closeModal(id) {
+      const backdrop = document.getElementById(id);
+      if (!backdrop) return;
+      const sheet = backdrop.querySelector('.sheet');
+      if (sheet) {
+        sheet.classList.remove('is-dragging');
+        sheet.style.transform = '';
+      }
+      backdrop.style.opacity = '';
+      backdrop.classList.remove('is-open');
+      backdrop.setAttribute('aria-hidden', 'true');
+      if (openModalId === id) {
+        openModalId = null;
+      }
+      document.body.classList.remove('modal-open');
+    }
+
+    function initModalSwipeDismiss() {
+      document.querySelectorAll('.sheet-backdrop').forEach((backdrop) => {
+        const sheet = backdrop.querySelector('.sheet');
+        if (!sheet) return;
+
+        let startY = 0;
+        let lastY = 0;
+        let startTime = 0;
+        let dragging = false;
+        let dragY = 0;
+
+        sheet.addEventListener('touchstart', (e) => {
+          if (e.touches.length !== 1) return;
+          const isGrabber = Boolean(e.target.closest('.grabber-area, .sheet-head'));
+          if (!isGrabber && sheet.scrollTop > 0) return;
+          startY = e.touches[0].clientY;
+          lastY = startY;
+          startTime = performance.now();
+          dragging = false;
+          dragY = 0;
+        }, { passive: true });
+
+        sheet.addEventListener('touchmove', (e) => {
+          if (e.touches.length !== 1) return;
+          const currY = e.touches[0].clientY;
+          const dy = currY - startY;
+          const isGrabber = Boolean(e.target.closest('.grabber-area, .sheet-head'));
+
+          if (!dragging) {
+            if ((dy > 6 && sheet.scrollTop <= 0) || (isGrabber && Math.abs(dy) > 4)) {
+              dragging = true;
+              sheet.classList.add('is-dragging');
+            } else {
+              return;
+            }
+          }
+
+          if (e.cancelable) e.preventDefault();
+          lastY = currY;
+          if (dy >= 0) {
+            dragY = dy;
+            sheet.style.transform = `translate3d(0, ${dragY.toFixed(1)}px, 0)`;
+            const ratio = Math.max(0.25, 1 - dragY / 380);
+            backdrop.style.opacity = String(ratio);
+          } else {
+            // Rubber-band resist if pulling upward
+            dragY = rubberDamp(dy, 24, 90);
+            sheet.style.transform = `translate3d(0, ${dragY.toFixed(1)}px, 0)`;
+          }
+        }, { passive: false });
+
+        function endDrag() {
+          if (!dragging) return;
+          dragging = false;
+          sheet.classList.remove('is-dragging');
+          const dt = Math.max(1, performance.now() - startTime);
+          const velocity = (lastY - startY) / dt;
+
+          if (dragY > 95 || (dragY > 36 && velocity > 0.5)) {
+            haptic(10);
+            closeModal(backdrop.id);
+          } else {
+            sheet.style.transform = '';
+            backdrop.style.opacity = '';
+          }
+        }
+
+        sheet.addEventListener('touchend', endDrag, { passive: true });
+        sheet.addEventListener('touchcancel', endDrag, { passive: true });
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && openModalId) {
+          closeModal(openModalId);
+        }
+      });
+    }
+
+    /* =====================================================================
+       CORE ATTENDANCE STORAGE & LOGIC
+       ===================================================================== */
     function getLogs() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -1420,6 +2452,7 @@
     }
 
     function openPortalDirectly() {
+      haptic(10);
       const settings = getSettings();
       if (!settings.portalUrl) {
         openSettingsModal();
@@ -1435,6 +2468,7 @@
     }
 
     function handleAttendanceAction(type) {
+      haptic(15);
       const settings = getSettings();
       const hasPortal = settings.portalUrl && settings.portalUrl.trim() !== '';
 
@@ -1448,7 +2482,7 @@
         if (saved) {
           setTimeout(() => {
             launchPortalUrl(settings.portalUrl, null);
-          }, 300);
+          }, 320);
         }
         return;
       }
@@ -1493,6 +2527,7 @@
         btn.textContent = 'Log Check Out';
       }
       banner.classList.remove('hidden');
+      haptic([10, 30, 10]);
     }
 
     function confirmReturnLog() {
@@ -1548,6 +2583,10 @@
 
       noteInput.value = '';
       saveLogs(logs);
+
+      // Playful spring feedback on updated tile & status
+      triggerPop(document.getElementById(type === 'in' ? 'todayInTime' : 'todayOutTime'));
+      triggerPop(document.getElementById('statusIcon'));
       return true;
     }
 
@@ -1627,14 +2666,18 @@
         }
       });
 
-      document.getElementById('statTotalDays').textContent = total;
-      document.getElementById('statCompleteDays').textContent = complete;
-      document.getElementById('statMissingOut').textContent = missingOut;
+      const elTotal = document.getElementById('statTotalDays');
+      const elComp = document.getElementById('statCompleteDays');
+      const elMiss = document.getElementById('statMissingOut');
+
+      if (elTotal.textContent !== String(total)) { elTotal.textContent = total; triggerPop(elTotal); }
+      if (elComp.textContent !== String(complete)) { elComp.textContent = complete; triggerPop(elComp); }
+      if (elMiss.textContent !== String(missingOut)) { elMiss.textContent = missingOut; triggerPop(elMiss); }
     }
 
     function renderLogs() {
       const logs = getLogs();
-      const container = document.getElementById('logListContainer');
+      const container = document.getElementById('logListInner');
       const filterMonth = document.getElementById('filterMonth').value;
 
       const sortedKeys = Object.keys(logs)
@@ -1646,24 +2689,25 @@
         return;
       }
 
-      container.innerHTML = sortedKeys.map(dateKey => {
+      container.innerHTML = sortedKeys.map((dateKey, idx) => {
         const item = logs[dateKey];
         const isToday = dateKey === getLocalDateKey();
         const isComplete = item.checkIn && item.checkOut;
+        const delayMs = Math.min(idx * 28, 220);
 
         return `
-          <div class="log-row">
+          <div class="log-row" style="animation-delay: ${delayMs}ms">
             <div class="log-row-top">
               <span class="log-date">${formatDisplayDate(dateKey)}${isToday ? ' · Today' : ''}</span>
               <span class="log-badge ${isComplete ? 'ok' : ''}">${isComplete ? 'Complete' : 'Incomplete'}</span>
             </div>
 
             <div class="log-pair">
-              <div class="log-chip" onclick="openEditModalForDate('${dateKey}', 'in')">
+              <div class="log-chip ripple-host" onclick="openEditModalForDate('${dateKey}', 'in')">
                 <span>In</span>
                 <strong class="nums">${item.checkIn ? item.checkIn.slice(0, 5) : '--:--'}</strong>
               </div>
-              <div class="log-chip" onclick="openEditModalForDate('${dateKey}', 'out')">
+              <div class="log-chip ripple-host" onclick="openEditModalForDate('${dateKey}', 'out')">
                 <span>Out</span>
                 <strong class="nums">${item.checkOut ? item.checkOut.slice(0, 5) : '--:--'}</strong>
               </div>
@@ -1684,6 +2728,7 @@
     }
 
     function resetFilter() {
+      haptic(8);
       document.getElementById('filterMonth').value = '';
       renderLogs();
     }
@@ -1702,10 +2747,11 @@
       radios.forEach(r => {
         r.checked = (r.value === (settings.workflowMode || 'log_and_open'));
       });
-      document.getElementById('settingsModal').classList.remove('hidden');
+      openModal('settingsModal');
     }
 
     function savePortalSettings() {
+      haptic(12);
       const portalName = document.getElementById('settingPortalName').value.trim();
       const rawUrl = document.getElementById('settingPortalUrl').value.trim();
       const selectedMode = document.querySelector('input[name="workflowMode"]:checked')?.value || 'log_and_open';
@@ -1723,6 +2769,7 @@
     }
 
     function clearPortalSettings() {
+      haptic(10);
       document.getElementById('settingPortalName').value = '';
       document.getElementById('settingPortalUrl').value = '';
       saveSettingsToStorage({
@@ -1746,10 +2793,11 @@
       document.getElementById('editModalTitle').textContent = `Edit ${type === 'in' ? 'Check-In' : 'Check-Out'}`;
       document.getElementById('editTimeInput').value = type === 'in' ? (item.checkIn || '08:00:00') : (item.checkOut || '17:00:00');
       document.getElementById('editNoteInput').value = item.note || '';
-      document.getElementById('editModal').classList.remove('hidden');
+      openModal('editModal');
     }
 
     function saveEditedTime() {
+      haptic(12);
       const dateKey = document.getElementById('editDateKey').value;
       const type = document.getElementById('editType').value;
       let timeVal = document.getElementById('editTimeInput').value;
@@ -1782,6 +2830,7 @@
     }
 
     function deleteSpecificPunch() {
+      haptic(12);
       const dateKey = document.getElementById('editDateKey').value;
       const type = document.getElementById('editType').value;
       const logs = getLogs();
@@ -1802,10 +2851,11 @@
       document.getElementById('manualIn').value = '08:00:00';
       document.getElementById('manualOut').value = '';
       document.getElementById('manualNote').value = '';
-      document.getElementById('manualAddModal').classList.remove('hidden');
+      openModal('manualAddModal');
     }
 
     function saveManualLog() {
+      haptic(12);
       const dateKey = document.getElementById('manualDate').value;
       let inVal = document.getElementById('manualIn').value;
       let outVal = document.getElementById('manualOut').value;
@@ -1831,18 +2881,15 @@
     }
 
     function openInstallModal() {
-      document.getElementById('installModal').classList.remove('hidden');
+      openModal('installModal');
     }
 
     function openBackupModal() {
-      document.getElementById('backupModal').classList.remove('hidden');
-    }
-
-    function closeModal(id) {
-      document.getElementById(id).classList.add('hidden');
+      openModal('backupModal');
     }
 
     function exportJSON() {
+      haptic(12);
       const dataStr = JSON.stringify({
         logs: getLogs(),
         settings: getSettings()
@@ -1875,7 +2922,6 @@
       const hh = parts[0] || 0;
       const mm = parts[1] || 0;
       const ss = parts[2] || 0;
-      // getTimezoneOffset() is (UTC - local) in minutes, e.g., -420 for UTC+7 (WIB)
       const offsetMin = typeof sourceTzOffsetMin === 'number' ? sourceTzOffsetMin : new Date().getTimezoneOffset();
       return Date.UTC(y, m - 1, d, hh, mm, ss) + offsetMin * 60000;
     }
@@ -1958,21 +3004,17 @@
 
       const xmlRows = [];
 
-      // Row 1: Report Title
       xmlRows.push(
         `<row r="1" ht="26" customHeight="1">${makeCell('A1', title, 1)}</row>`
       );
 
-      // Row 2: Generated Timestamp & Summary
       const subtitle = `Generated: ${nowInfo.dateStr} ${nowInfo.timeStr} ${tzShort}  |  Total Days: ${totalCount}  |  Complete: ${completeCount}  |  Incomplete: ${incompleteCount}`;
       xmlRows.push(
         `<row r="2" ht="18" customHeight="1">${makeCell('A2', subtitle, 2)}</row>`
       );
 
-      // Row 3: Blank spacer
       xmlRows.push(`<row r="3" ht="8" customHeight="1"/>`);
 
-      // Row 4: Table Headers
       const headers = [
         `Date (${tzShort})`,
         'Day',
@@ -1985,7 +3027,6 @@
       const headerCells = headers.map((h, i) => makeCell(`${colLetter(i)}4`, h, 3)).join('');
       xmlRows.push(`<row r="4" ht="24" customHeight="1">${headerCells}</row>`);
 
-      // Data Rows (starting at row 5)
       if (rowsData.length === 0) {
         xmlRows.push(
           `<row r="5" ht="22" customHeight="1">${makeCell('A5', 'No attendance records found.', 2)}</row>`
@@ -2181,6 +3222,7 @@
     }
 
     function exportExcelReport() {
+      haptic(14);
       const logs = getLogs();
       const kstRows = buildReportRowsForTimezone(logs, 9);
       const wibRows = buildReportRowsForTimezone(logs, 7);
@@ -2281,6 +3323,10 @@
     }
 
     initTheme();
+    initTouchFeedback();
+    initBouncyHistoryList();
+    initPageRubberBand();
+    initModalSwipeDismiss();
     document.getElementById('filterMonth').value = getLocalDateKey().slice(0, 7);
     updateClock();
     setInterval(updateClock, 1000);
