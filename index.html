@@ -1,492 +1,1197 @@
 <!DOCTYPE html>
-<html lang="id" class="dark">
+<html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#0f172a" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#dbe7f3" id="metaThemeColor" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <title>Cek Absenku — Log Absensi & Integrasi Portal Kantor</title>
-  <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Cek%20Absenku%22%2C%22short_name%22%3A%22Cek%20Absen%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23090d16%22%2C%22theme_color%22%3A%22%23090d16%22%7D" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <script>
-    if (window.tailwind) {
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-              mono: ['"JetBrains Mono"', 'monospace'],
-            },
-            colors: {
-              surface: {
-                950: '#090d16',
-                900: '#0f172a',
-                800: '#1e293b',
-                700: '#334155',
-              }
-            }
-          }
-        }
-      };
-    }
-  </script>
+  <title>Absen</title>
+  <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Catatan%20Absen%22%2C%22short_name%22%3A%22Absen%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23dbe7f3%22%2C%22theme_color%22%3A%22%23dbe7f3%22%7D" />
   <style>
-    body {
-      background-color: #090d16;
-      color: #f8fafc;
+    :root {
+      /* iPhone Daylight Wallpaper & Liquid Glass */
+      --bg-base: #dde7f2;
+      --wallpaper:
+        radial-gradient(circle at 12% 8%, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0) 42%),
+        radial-gradient(circle at 88% 14%, rgba(169, 206, 244, 0.85) 0%, rgba(169, 206, 244, 0) 46%),
+        radial-gradient(circle at 82% 76%, rgba(244, 211, 187, 0.72) 0%, rgba(244, 211, 187, 0) 48%),
+        radial-gradient(circle at 16% 84%, rgba(183, 216, 232, 0.78) 0%, rgba(183, 216, 232, 0) 50%),
+        linear-gradient(160deg, #e8f0f8 0%, #d9e5f2 48%, #e9e4df 100%);
+
+      --glass: rgba(255, 255, 255, 0.56);
+      --glass-strong: rgba(255, 255, 255, 0.72);
+      --glass-tile: rgba(255, 255, 255, 0.48);
+      --glass-modal: rgba(248, 250, 252, 0.84);
+      --glass-border: rgba(255, 255, 255, 0.72);
+      --glass-hairline: rgba(15, 23, 42, 0.075);
+      --glass-shadow:
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.88),
+        inset 0 0 0 0.5px rgba(255, 255, 255, 0.45),
+        0 10px 30px -10px rgba(30, 50, 75, 0.12),
+        0 2px 6px rgba(30, 50, 75, 0.04);
+
+      --text: #1c1c1e;
+      --text-secondary: rgba(28, 28, 30, 0.62);
+      --text-tertiary: rgba(28, 28, 30, 0.36);
+
+      --ios-blue: #007aff;
+      --ios-green: #28a745;
+      --ios-green-tint: rgba(52, 199, 89, 0.16);
+      --ios-green-text: #1b7f37;
+      --ios-orange: #ff9500;
+      --ios-orange-tint: rgba(255, 149, 0, 0.16);
+      --ios-orange-text: #a85c00;
+      --ios-blue-tint: rgba(0, 122, 255, 0.14);
+      --ios-blue-text: #005ecb;
+      --ios-red: #ff3b30;
+
+      --btn-in-bg: #2fb350;
+      --btn-in-text: #ffffff;
+      --btn-out-bg: #1c1c1e;
+      --btn-out-text: #ffffff;
+      --toast-bg: rgba(28, 28, 30, 0.86);
+      --toast-text: #ffffff;
+      --backdrop: rgba(15, 23, 42, 0.28);
+    }
+
+    html[data-theme="dark"] {
+      /* iPhone Night Wallpaper & Frosted Dark Glass */
+      --bg-base: #0d1520;
+      --wallpaper:
+        radial-gradient(circle at 14% 10%, rgba(56, 108, 168, 0.42) 0%, rgba(56, 108, 168, 0) 44%),
+        radial-gradient(circle at 86% 18%, rgba(44, 78, 122, 0.45) 0%, rgba(44, 78, 122, 0) 46%),
+        radial-gradient(circle at 78% 82%, rgba(92, 68, 74, 0.32) 0%, rgba(92, 68, 74, 0) 48%),
+        radial-gradient(circle at 18% 82%, rgba(36, 86, 102, 0.35) 0%, rgba(36, 86, 102, 0) 46%),
+        linear-gradient(165deg, #0d141e 0%, #121c29 52%, #0d121a 100%);
+
+      --glass: rgba(34, 40, 50, 0.56);
+      --glass-strong: rgba(44, 50, 62, 0.68);
+      --glass-tile: rgba(255, 255, 255, 0.065);
+      --glass-modal: rgba(28, 32, 40, 0.86);
+      --glass-border: rgba(255, 255, 255, 0.14);
+      --glass-hairline: rgba(255, 255, 255, 0.09);
+      --glass-shadow:
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.16),
+        inset 0 0 0 0.5px rgba(255, 255, 255, 0.08),
+        0 14px 36px -10px rgba(0, 0, 0, 0.48),
+        0 2px 8px rgba(0, 0, 0, 0.25);
+
+      --text: #f5f5f7;
+      --text-secondary: rgba(245, 245, 247, 0.62);
+      --text-tertiary: rgba(245, 245, 247, 0.34);
+
+      --ios-blue: #0a84ff;
+      --ios-green: #30d158;
+      --ios-green-tint: rgba(48, 209, 88, 0.18);
+      --ios-green-text: #5be07c;
+      --ios-orange: #ff9f0a;
+      --ios-orange-tint: rgba(255, 159, 10, 0.18);
+      --ios-orange-text: #ffb340;
+      --ios-blue-tint: rgba(10, 132, 255, 0.2);
+      --ios-blue-text: #64b5ff;
+      --ios-red: #ff453a;
+
+      --btn-in-bg: #28a745;
+      --btn-in-text: #ffffff;
+      --btn-out-bg: rgba(255, 255, 255, 0.9);
+      --btn-out-text: #111317;
+      --toast-bg: rgba(245, 245, 247, 0.92);
+      --toast-text: #1c1c1e;
+      --backdrop: rgba(0, 0, 0, 0.52);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
       -webkit-tap-highlight-color: transparent;
-      user-select: none;
     }
-    .widget-card {
-      background: linear-gradient(145deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
+
+    html {
+      background-color: var(--bg-base);
     }
-    .btn-press:active {
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      min-height: 100dvh;
+      background-color: var(--bg-base);
+      background-image: var(--wallpaper);
+      background-attachment: fixed;
+      line-height: 1.4;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      justify-content: center;
+      padding: max(18px, env(safe-area-inset-top)) 16px max(72px, env(safe-area-inset-bottom));
+    }
+
+    .nums {
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Shared Glass Surface */
+    .glass {
+      background: var(--glass);
+      backdrop-filter: blur(28px) saturate(185%);
+      -webkit-backdrop-filter: blur(28px) saturate(185%);
+      border: 0.5px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+    }
+
+    /* Top Bar */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 2px 4px;
+    }
+
+    .brand h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.15;
+    }
+
+    .brand p {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 1px;
+    }
+
+    .top-pills {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .pill-btn {
+      background: var(--glass);
+      backdrop-filter: blur(22px) saturate(180%);
+      -webkit-backdrop-filter: blur(22px) saturate(180%);
+      border: 0.5px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+      color: var(--text);
+      height: 34px;
+      padding: 0 12px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: transform 0.14s ease, background 0.18s ease;
+    }
+
+    .pill-btn.icon-only {
+      width: 34px;
+      padding: 0;
+    }
+
+    .pill-btn:active {
+      transform: scale(0.94);
+    }
+
+    .dot-blue {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--ios-blue);
+    }
+
+    /* Return Confirmation Banner */
+    .return-card {
+      border-radius: 22px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      background: var(--glass-strong);
+    }
+
+    .return-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .return-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--ios-blue-text);
+    }
+
+    .return-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    /* Portal Bar */
+    .portal-bar {
+      border-radius: 18px;
+      padding: 10px 12px 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .portal-meta {
+      min-width: 0;
+    }
+
+    .portal-name {
+      font-size: 12.5px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .portal-url {
+      font-size: 11px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 1px;
+    }
+
+    .open-web-btn {
+      background: var(--ios-blue-tint);
+      color: var(--ios-blue-text);
+      border: none;
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: transform 0.14s ease;
+    }
+
+    .open-web-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Main iPhone Widget Card */
+    .widget {
+      border-radius: 26px;
+      padding: 18px;
+    }
+
+    .widget-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .date-day {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .date-full {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-top: 1px;
+    }
+
+    .clock-big {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      text-align: right;
+    }
+
+    .clock-zone {
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-align: right;
+      margin-top: 2px;
+    }
+
+    /* Status Pill Box */
+    .status-strip {
+      border-radius: 16px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      margin-bottom: 14px;
+      background: var(--ios-orange-tint);
+      border: 0.5px solid rgba(255, 149, 0, 0.22);
+      transition: background 0.25s ease;
+    }
+
+    .status-strip.in {
+      background: var(--ios-green-tint);
+      border-color: rgba(52, 199, 89, 0.24);
+    }
+
+    .status-strip.done {
+      background: var(--ios-blue-tint);
+      border-color: rgba(0, 122, 255, 0.24);
+    }
+
+    .status-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.55);
+      color: var(--ios-orange-text);
+    }
+
+    html[data-theme="dark"] .status-icon {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .status-strip.in .status-icon { color: var(--ios-green-text); }
+    .status-strip.done .status-icon { color: var(--ios-blue-text); }
+
+    .status-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--ios-orange-text);
+      line-height: 1.25;
+    }
+
+    .status-strip.in .status-title { color: var(--ios-green-text); }
+    .status-strip.done .status-title { color: var(--ios-blue-text); }
+
+    .status-sub {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 1px;
+    }
+
+    /* Two Frosted Time Tiles */
+    .tiles {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .tile {
+      background: var(--glass-tile);
+      border: 0.5px solid var(--glass-border);
+      border-radius: 18px;
+      padding: 12px 14px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    }
+
+    html[data-theme="dark"] .tile {
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .tile-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .tile-time {
+      margin-top: 6px;
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      color: var(--text-tertiary);
+    }
+
+    .tile-time.has-in { color: var(--text); }
+    .tile-time.has-out { color: var(--text); }
+
+    .edit-link {
+      background: none;
+      border: none;
+      color: var(--ios-blue);
+      font-size: 12px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    /* Action Buttons */
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .act-btn {
+      border: none;
+      border-radius: 16px;
+      padding: 13px 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      font-family: inherit;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+      transition: transform 0.14s ease, opacity 0.15s ease;
+    }
+
+    .act-btn:active {
+      transform: scale(0.96);
+    }
+
+    .act-btn.in {
+      background: var(--btn-in-bg);
+      color: var(--btn-in-text);
+    }
+
+    .act-btn.out {
+      background: var(--btn-out-bg);
+      color: var(--btn-out-text);
+    }
+
+    .act-label {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .act-hint {
+      font-size: 11px;
+      opacity: 0.78;
+    }
+
+    /* Quick Note */
+    .note-box {
+      width: 100%;
+      margin-top: 12px;
+      background: var(--glass-tile);
+      border: 0.5px solid var(--glass-border);
+      border-radius: 13px;
+      padding: 10px 13px;
+      font-size: 13px;
+      color: var(--text);
+      font-family: inherit;
+      outline: none;
+    }
+
+    .note-box::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    .note-box:focus {
+      background: var(--glass-strong);
+    }
+
+    /* Monthly Summary Strip */
+    .stats-strip {
+      border-radius: 20px;
+      padding: 12px 16px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      text-align: center;
+    }
+
+    .stat-col {
+      position: relative;
+    }
+
+    .stat-col + .stat-col::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 15%;
+      bottom: 15%;
+      width: 0.5px;
+      background: var(--glass-hairline);
+    }
+
+    .stat-val {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .stat-lbl {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 1px;
+    }
+
+    /* History Card */
+    .history {
+      border-radius: 24px;
+      padding: 16px;
+    }
+
+    .history-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .history-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+    }
+
+    .text-btn {
+      background: none;
+      border: none;
+      color: var(--ios-blue);
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .month-input {
+      background: var(--glass-tile);
+      border: 0.5px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 7px 11px;
+      font-size: 12.5px;
+      color: var(--text);
+      font-family: inherit;
+      outline: none;
+    }
+
+    .log-list {
+      display: flex;
+      flex-direction: column;
+      border-radius: 16px;
+      overflow: hidden;
+      background: var(--glass-tile);
+      border: 0.5px solid var(--glass-border);
+      max-height: 390px;
+      overflow-y: auto;
+    }
+
+    .log-row {
+      padding: 12px 14px;
+      border-bottom: 0.5px solid var(--glass-hairline);
+    }
+
+    .log-row:last-child {
+      border-bottom: none;
+    }
+
+    .log-row-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .log-date {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .log-badge {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--ios-orange-text);
+    }
+
+    .log-badge.ok {
+      color: var(--ios-green-text);
+    }
+
+    .log-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .log-chip {
+      background: var(--glass);
+      border: 0.5px solid var(--glass-border);
+      border-radius: 11px;
+      padding: 7px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12.5px;
+      cursor: pointer;
+    }
+
+    .log-chip span {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+    }
+
+    .log-chip strong {
+      font-weight: 600;
+    }
+
+    .log-note {
+      margin-top: 7px;
+      font-size: 11.5px;
+      color: var(--text-secondary);
+    }
+
+    .empty-box {
+      padding: 26px 14px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* Bottom Sheet Modals (iOS Style) */
+    .sheet-backdrop {
+      position: fixed;
+      inset: 0;
+      background: var(--backdrop);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 10px;
+      z-index: 50;
+    }
+
+    @media (min-width: 480px) {
+      .sheet-backdrop {
+        align-items: center;
+      }
+    }
+
+    .sheet {
+      width: 100%;
+      max-width: 410px;
+      background: var(--glass-modal);
+      backdrop-filter: blur(36px) saturate(190%);
+      -webkit-backdrop-filter: blur(36px) saturate(190%);
+      border: 0.5px solid var(--glass-border);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+      border-radius: 28px;
+      padding: 10px 18px 20px;
+      max-height: 88vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .grabber {
+      width: 36px;
+      height: 5px;
+      border-radius: 999px;
+      background: var(--text-tertiary);
+      margin: 0 auto 2px;
+      opacity: 0.55;
+    }
+
+    .sheet-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sheet-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .close-circle {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: var(--glass-hairline);
+      color: var(--text-secondary);
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      padding-left: 2px;
+    }
+
+    .field input[type="text"],
+    .field input[type="url"],
+    .field input[type="time"],
+    .field input[type="date"] {
+      width: 100%;
+      background: var(--glass-tile);
+      border: 0.5px solid var(--glass-border);
+      border-radius: 13px;
+      padding: 10px 12px;
+      font-size: 14px;
+      color: var(--text);
+      font-family: inherit;
+      outline: none;
+    }
+
+    .hint-text {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+
+    .option-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .option-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 11px 12px;
+      border-radius: 14px;
+      background: var(--glass-tile);
+      border: 0.5px solid var(--glass-border);
+      cursor: pointer;
+    }
+
+    .option-item input {
+      margin-top: 2px;
+      accent-color: var(--ios-blue);
+    }
+
+    .option-title {
+      font-size: 13px;
+      font-weight: 600;
+      display: block;
+    }
+
+    .option-desc {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      display: block;
+      margin-top: 2px;
+    }
+
+    .sheet-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    .ios-btn {
+      border: none;
+      border-radius: 14px;
+      padding: 11px 14px;
+      font-size: 13.5px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: transform 0.14s ease;
+    }
+
+    .ios-btn:active {
       transform: scale(0.97);
     }
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
+
+    .ios-btn.primary {
+      background: var(--ios-blue);
+      color: #ffffff;
+      flex: 1;
     }
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
+
+    .ios-btn.secondary {
+      background: var(--glass-tile);
+      border: 0.5px solid var(--glass-border);
+      color: var(--text);
     }
-    @keyframes pulse-ring {
-      0% { transform: scale(0.95); opacity: 0.7; }
-      50% { transform: scale(1.05); opacity: 0.3; }
-      100% { transform: scale(0.95); opacity: 0.7; }
+
+    .ios-btn.danger {
+      background: rgba(255, 59, 48, 0.12);
+      color: var(--ios-red);
     }
-    .animate-ring {
-      animation: pulse-ring 2.5s infinite ease-in-out;
+
+    /* Floating iOS Toast Pill */
+    .toast {
+      position: fixed;
+      top: max(14px, env(safe-area-inset-top));
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px) scale(0.95);
+      background: var(--toast-bg);
+      color: var(--toast-text);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 9px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 500;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 80;
+      white-space: nowrap;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
     }
-    @keyframes slide-down {
-      0% { opacity: 0; transform: translateY(-10px); }
-      100% { opacity: 1; transform: translateY(0); }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0) scale(1);
     }
-    .animate-banner {
-      animation: slide-down 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+    .hidden {
+      display: none !important;
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-start py-4 px-4 sm:py-8">
+<body>
 
-  <!-- Container Utama (Lebar Maksimal Mobile Widget) -->
-  <main class="w-full max-w-md space-y-4 pb-16">
+  <main class="app">
 
-    <!-- Header Bar -->
-    <header class="flex items-center justify-between px-1">
-      <div class="flex items-center gap-2.5">
-        <div class="w-9 h-9 rounded-2xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-400">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </div>
-        <div>
-          <h1 class="text-base font-bold tracking-tight text-white leading-none">Cek Absenku</h1>
-          <p class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>
-            Log Permanen Lokal
-          </p>
-        </div>
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="brand">
+        <h1>Absen</h1>
+        <p>Log tersimpan lokal</p>
       </div>
-
-      <div class="flex items-center gap-1.5">
-        <button onclick="openSettingsModal()" id="btnSettings" title="Pengaturan Web Kantor" class="relative p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 border border-slate-700/60 transition btn-press">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          <span id="settingsDot" class="hidden absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-indigo-500 border-2 border-surface-950"></span>
+      <div class="top-pills">
+        <button class="pill-btn" onclick="openSettingsModal()">
+          <span id="settingsDot" class="dot-blue hidden"></span>
+          Web Kantor
         </button>
-
-        <button onclick="openInstallModal()" title="Pasang sebagai Widget HP" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 border border-slate-700/60 transition btn-press">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-          </svg>
-        </button>
-
-        <button onclick="openBackupModal()" title="Backup & Restore Data" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 border border-slate-700/60 transition btn-press">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+        <button class="pill-btn" onclick="openBackupModal()">Backup</button>
+        <button class="pill-btn icon-only" onclick="toggleTheme()" id="themeBtn" title="Ganti tema terang/gelap" aria-label="Ganti tema">
+          <svg id="themeIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
           </svg>
         </button>
       </div>
     </header>
 
-    <!-- Banner Konfirmasi Otomatis Setelah Kembali dari Web Kantor -->
-    <div id="returnConfirmBanner" class="hidden animate-banner rounded-2xl bg-indigo-600/20 border border-indigo-400/40 p-3.5 shadow-lg">
-      <div class="flex items-start justify-between gap-3">
-        <div class="flex items-start gap-2.5">
-          <div class="w-8 h-8 rounded-xl bg-indigo-500/30 text-indigo-300 flex items-center justify-center shrink-0 mt-0.5">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <div>
-            <p class="text-xs font-bold text-white" id="returnBannerTitle">Baru selesai face scan di web kantor?</p>
-            <p class="text-[11px] text-indigo-200/80 mt-0.5" id="returnBannerDesc">Klik tombol di bawah agar log langsung tersimpan permanen.</p>
-          </div>
+    <!-- Return Confirmation Banner -->
+    <div id="returnConfirmBanner" class="glass return-card hidden">
+      <div class="return-head">
+        <div>
+          <div class="return-title" id="returnBannerTitle">Selesai scan wajah di web kantor?</div>
+          <div class="return-desc" id="returnBannerDesc">Simpan jam sekarang supaya tidak lupa.</div>
         </div>
-        <button onclick="dismissReturnBanner()" class="text-slate-400 hover:text-white p-1">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+        <button class="close-circle" onclick="dismissReturnBanner()">×</button>
       </div>
-      <div class="mt-3 flex gap-2">
-        <button id="btnConfirmReturnAction" onclick="confirmReturnLog()" class="flex-1 py-2 px-3 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-xs transition btn-press">
-          Ya, Simpan Log Sekarang
-        </button>
-        <button onclick="dismissReturnBanner()" class="py-2 px-3 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition">
-          Belum
-        </button>
+      <div class="sheet-actions">
+        <button id="btnConfirmReturnAction" class="ios-btn primary" onclick="confirmReturnLog()">Simpan Sekarang</button>
+        <button class="ios-btn secondary" onclick="dismissReturnBanner()">Nanti</button>
       </div>
     </div>
 
-    <!-- Bar Shortcut Web Kantor (Tampil jika URL diatur) -->
-    <div id="portalShortcutBar" class="hidden rounded-2xl bg-slate-900/90 border border-slate-800 px-3.5 py-2.5 flex items-center justify-between gap-2">
-      <div class="flex items-center gap-2 min-w-0">
-        <span class="w-2 h-2 rounded-full bg-indigo-400 shrink-0"></span>
-        <div class="truncate">
-          <p class="text-[11px] font-bold text-slate-200 truncate" id="portalLabelDisplay">Web Absen Kantor</p>
-          <p class="text-[10px] text-slate-400 font-mono truncate" id="portalUrlDisplay">https://...</p>
-        </div>
+    <!-- Portal Shortcut Bar -->
+    <div id="portalShortcutBar" class="glass portal-bar hidden">
+      <div class="portal-meta">
+        <div class="portal-name" id="portalLabelDisplay">Web Absen Kantor</div>
+        <div class="portal-url" id="portalUrlDisplay">https://...</div>
       </div>
-      <div class="flex items-center gap-1.5 shrink-0">
-        <button onclick="openPortalDirectly()" class="px-2.5 py-1.5 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-400/30 text-indigo-300 text-[11px] font-bold flex items-center gap-1 transition btn-press">
-          <span>Buka Web</span>
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-          </svg>
-        </button>
-      </div>
+      <button class="open-web-btn" onclick="openPortalDirectly()">Buka Web ↗</button>
     </div>
 
-    <!-- ANDROID WIDGET UTAMA (Status Hari Ini) -->
-    <section class="widget-card rounded-[28px] p-5 relative overflow-hidden">
-      <div id="widgetGlow" class="absolute -top-16 -right-16 w-44 h-44 rounded-full bg-amber-500/15 blur-3xl pointer-events-none transition-colors duration-500"></div>
-
-      <!-- Tanggal & Jam Real-Time -->
-      <div class="flex items-start justify-between mb-4">
+    <!-- Main iPhone Glass Widget -->
+    <section class="glass widget">
+      <div class="widget-header">
         <div>
-          <span id="todayDayName" class="text-xs font-semibold uppercase tracking-wider text-indigo-400">Hari Ini</span>
-          <h2 id="todayDateText" class="text-lg font-bold text-white mt-0.5">--</h2>
+          <div class="date-day" id="todayDayName">Hari Ini</div>
+          <div class="date-full" id="todayDateText">--</div>
         </div>
-        <div class="text-right">
-          <div id="liveClock" class="font-mono text-xl font-bold text-white tracking-tight">--:--:--</div>
-          <span class="text-[10px] font-medium text-slate-400 uppercase tracking-widest">WIB / Lokal</span>
-        </div>
-      </div>
-
-      <!-- Status Banner Besar -->
-      <div id="statusBanner" class="rounded-2xl p-4 mb-4 border transition-all duration-300 bg-amber-500/10 border-amber-500/30">
-        <div class="flex items-center gap-3.5">
-          <div id="statusIconWrapper" class="relative w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 bg-amber-500/20 text-amber-400">
-            <span id="statusPulse" class="absolute inset-0 rounded-2xl bg-amber-400/20 animate-ring"></span>
-            <svg id="statusIcon" class="w-6 h-6 relative z-10" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2">
-              <span id="statusBadge" class="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300">
-                BELUM ABSEN
-              </span>
-            </div>
-            <p id="statusHeadline" class="text-sm font-bold text-white mt-1 truncate">Belum ada Check-In hari ini</p>
-            <p id="statusSubtext" class="text-xs text-slate-300/80 mt-0.5">Segera lakukan absen agar tidak kena SP</p>
-          </div>
+        <div>
+          <div class="clock-big nums" id="liveClock">--:--</div>
+          <div class="clock-zone">Waktu lokal</div>
         </div>
       </div>
 
-      <!-- Ringkasan Jam Masuk & Pulang Hari Ini -->
-      <div class="grid grid-cols-2 gap-3 mb-4">
-        <div class="rounded-2xl bg-slate-900/90 border border-slate-800 p-3 flex flex-col justify-between">
-          <div class="flex items-center justify-between">
-            <span class="text-[11px] font-semibold text-slate-400">CHECK-IN</span>
-            <span id="inCheckIcon" class="w-2 h-2 rounded-full bg-slate-600"></span>
-          </div>
-          <div class="mt-1.5 flex items-baseline justify-between">
-            <span id="todayInTime" class="font-mono text-lg font-bold text-slate-500">--:--</span>
-            <button id="editInBtn" onclick="openEditModal('in')" class="hidden text-[11px] text-indigo-400 hover:underline font-medium">Ubah</button>
-          </div>
+      <!-- Status Strip -->
+      <div id="statusBanner" class="status-strip">
+        <div class="status-icon" id="statusIcon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
         </div>
-
-        <div class="rounded-2xl bg-slate-900/90 border border-slate-800 p-3 flex flex-col justify-between">
-          <div class="flex items-center justify-between">
-            <span class="text-[11px] font-semibold text-slate-400">CHECK-OUT</span>
-            <span id="outCheckIcon" class="w-2 h-2 rounded-full bg-slate-600"></span>
-          </div>
-          <div class="mt-1.5 flex items-baseline justify-between">
-            <span id="todayOutTime" class="font-mono text-lg font-bold text-slate-500">--:--</span>
-            <button id="editOutBtn" onclick="openEditModal('out')" class="hidden text-[11px] text-indigo-400 hover:underline font-medium">Ubah</button>
-          </div>
+        <div>
+          <div class="status-title" id="statusHeadline">Belum absen masuk</div>
+          <div class="status-sub" id="statusSubtext">Catat setelah scan wajah di browser</div>
         </div>
       </div>
 
-      <!-- Tombol Aksi Utama (1-Tap) -->
-      <div class="grid grid-cols-2 gap-3">
-        <button id="btnCheckIn" onclick="handleAttendanceAction('in')" class="btn-press py-3.5 px-4 rounded-2xl font-bold text-sm flex flex-col items-center justify-center gap-0.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20 transition cursor-pointer">
-          <div class="flex items-center gap-1.5">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-            </svg>
-            <span id="btnCheckInLabel">Catat Masuk</span>
+      <!-- Time Tiles -->
+      <div class="tiles">
+        <div class="tile">
+          <div class="tile-top">
+            <span>Masuk</span>
+            <button id="editInBtn" class="edit-link hidden" onclick="openEditModal('in')">Ubah</button>
           </div>
-          <span id="btnCheckInSub" class="text-[10px] font-semibold opacity-80">Simpan Log Sekarang</span>
+          <div id="todayInTime" class="tile-time nums">--:--</div>
+        </div>
+
+        <div class="tile">
+          <div class="tile-top">
+            <span>Pulang</span>
+            <button id="editOutBtn" class="edit-link hidden" onclick="openEditModal('out')">Ubah</button>
+          </div>
+          <div id="todayOutTime" class="tile-time nums">--:--</div>
+        </div>
+      </div>
+
+      <!-- Primary Actions -->
+      <div class="actions">
+        <button class="act-btn in" onclick="handleAttendanceAction('in')">
+          <span class="act-label">Catat Masuk</span>
+          <span class="act-hint" id="btnCheckInSub">Simpan jam sekarang</span>
         </button>
 
-        <button id="btnCheckOut" onclick="handleAttendanceAction('out')" class="btn-press py-3.5 px-4 rounded-2xl font-bold text-sm flex flex-col items-center justify-center gap-0.5 bg-sky-500 hover:bg-sky-400 text-slate-950 shadow-lg shadow-sky-500/20 transition cursor-pointer">
-          <div class="flex items-center gap-1.5">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            <span id="btnCheckOutLabel">Catat Pulang</span>
-          </div>
-          <span id="btnCheckOutSub" class="text-[10px] font-semibold opacity-80">Simpan Log Sekarang</span>
+        <button class="act-btn out" onclick="handleAttendanceAction('out')">
+          <span class="act-label">Catat Pulang</span>
+          <span class="act-hint" id="btnCheckOutSub">Simpan jam sekarang</span>
         </button>
       </div>
 
-      <!-- Catatan Opsional Cepat -->
-      <div class="mt-3 flex items-center gap-2">
-        <input id="quickNoteInput" type="text" placeholder="Catatan opsional (misal: WFO, scan wajah sukses)..." class="w-full bg-slate-900/70 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition" />
+      <!-- Quick Note -->
+      <input id="quickNoteInput" class="note-box" type="text" placeholder="Catatan opsional (misal: WFO, scan aman)" />
+    </section>
+
+    <!-- Monthly Stats -->
+    <section class="glass stats-strip">
+      <div class="stat-col">
+        <div class="stat-val nums" id="statTotalDays">0</div>
+        <div class="stat-lbl">Hadir</div>
+      </div>
+      <div class="stat-col">
+        <div class="stat-val nums" id="statCompleteDays">0</div>
+        <div class="stat-lbl">Lengkap</div>
+      </div>
+      <div class="stat-col">
+        <div class="stat-val nums" id="statMissingOut">0</div>
+        <div class="stat-lbl">Lupa Pulang</div>
       </div>
     </section>
 
-    <!-- Statistik Singkat Bulan Ini -->
-    <section class="grid grid-cols-3 gap-2.5">
-      <div class="widget-card rounded-2xl p-3 text-center">
-        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Hadir Bulan Ini</span>
-        <p id="statTotalDays" class="font-mono text-lg font-bold text-white mt-0.5">0</p>
-      </div>
-      <div class="widget-card rounded-2xl p-3 text-center">
-        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Lengkap (In+Out)</span>
-        <p id="statCompleteDays" class="font-mono text-lg font-bold text-emerald-400 mt-0.5">0</p>
-      </div>
-      <div class="widget-card rounded-2xl p-3 text-center">
-        <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Lupa Out</span>
-        <p id="statMissingOut" class="font-mono text-lg font-bold text-amber-400 mt-0.5">0</p>
-      </div>
-    </section>
-
-    <!-- Riwayat Log Permanen -->
-    <section class="widget-card rounded-[26px] p-4">
-      <div class="flex items-center justify-between mb-3">
-        <div>
-          <h3 class="text-sm font-bold text-white">Riwayat Log Permanen</h3>
-          <p class="text-[11px] text-slate-400">Tersimpan otomatis di memori perangkat</p>
-        </div>
-        <button onclick="openManualAddModal()" class="text-xs font-semibold px-2.5 py-1.5 rounded-xl bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500/25 transition btn-press">
-          + Tambah Manual
-        </button>
+    <!-- History Section -->
+    <section class="glass history">
+      <div class="history-head">
+        <span class="history-title">Riwayat</span>
+        <button class="text-btn" onclick="openManualAddModal()">+ Tambah</button>
       </div>
 
-      <!-- Filter Bulan -->
-      <div class="flex items-center gap-2 mb-3 overflow-x-auto no-scrollbar pb-1">
-        <input type="month" id="filterMonth" onchange="renderLogs()" class="bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500" />
-        <button onclick="resetFilter()" class="text-[11px] font-medium px-2.5 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 shrink-0">
-          Semua Log
-        </button>
+      <div class="filter-bar">
+        <input type="month" id="filterMonth" class="month-input" onchange="renderLogs()" />
+        <button class="pill-btn" style="height: 32px; font-size: 12px;" onclick="resetFilter()">Semua</button>
+        <button class="pill-btn" style="height: 32px; font-size: 12px; margin-left: auto;" onclick="openInstallModal()">Pasang di HP</button>
       </div>
 
-      <!-- Daftar Log -->
-      <div id="logListContainer" class="space-y-2.5 max-h-[380px] overflow-y-auto no-scrollbar pr-0.5">
-        <!-- Item log dirender via JS -->
-      </div>
+      <div id="logListContainer" class="log-list"></div>
     </section>
 
   </main>
 
-  <!-- Toast Notifikasi -->
-  <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-all duration-300 translate-y-3">
-    <div class="bg-slate-800 border border-slate-700 text-white px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-2 text-xs font-semibold whitespace-nowrap">
-      <span id="toastDot" class="w-2 h-2 rounded-full bg-emerald-400"></span>
-      <span id="toastMessage">Log tersimpan</span>
-    </div>
-  </div>
+  <!-- Toast -->
+  <div id="toast" class="toast">Tersimpan</div>
 
-  <!-- MODAL PENGATURAN WEB ABSEN KANTOR -->
-  <div id="settingsModal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md p-5 space-y-4 max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-            </svg>
-          </div>
-          <div>
-            <h3 class="text-base font-bold text-white">Integrasi Web Absen Kantor</h3>
-            <p class="text-[11px] text-slate-400">Hubungkan widget dengan portal scan wajah kantor</p>
-          </div>
-        </div>
-        <button onclick="closeModal('settingsModal')" class="text-slate-400 hover:text-white p-1">✕</button>
+  <!-- MODAL: PENGATURAN WEB KANTOR -->
+  <div id="settingsModal" class="sheet-backdrop hidden" onclick="backdropClose(event, 'settingsModal')">
+    <div class="sheet">
+      <div class="grabber"></div>
+      <div class="sheet-head">
+        <span class="sheet-title">Web Absen Kantor</span>
+        <button class="close-circle" onclick="closeModal('settingsModal')">×</button>
       </div>
 
-      <div class="space-y-3 text-xs">
-        <div>
-          <label class="block text-slate-300 font-semibold mb-1">Nama Portal / Kantor</label>
-          <input type="text" id="settingPortalName" placeholder="Contoh: Portal HRIS / Absen Kantor" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500" />
-        </div>
+      <div class="field">
+        <label>Nama Portal</label>
+        <input type="text" id="settingPortalName" placeholder="Misal: Absen Kantor" />
+      </div>
 
-        <div>
-          <label class="block text-slate-300 font-semibold mb-1">URL Web Absen Kantor <span class="text-rose-400">*</span></label>
-          <input type="url" id="settingPortalUrl" placeholder="https://absen.kantorku.co.id" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-white font-mono text-xs placeholder-slate-500 focus:outline-none focus:border-indigo-500" />
-          <p class="text-[10px] text-slate-400 mt-1">Masukkan link halaman login / check-in browser yang biasa dibuka saat scan wajah.</p>
-        </div>
+      <div class="field">
+        <label>URL Halaman Absen</label>
+        <input type="url" id="settingPortalUrl" placeholder="https://absen.kantorku.co.id" />
+        <span class="hint-text">Alamat browser kantor yang biasa dipakai untuk check-in dan scan wajah.</span>
+      </div>
 
-        <div class="pt-1">
-          <label class="block text-slate-300 font-semibold mb-2">Mode Alur Kerja Tombol Utama</label>
-          <div class="space-y-2">
-            <label class="flex items-start gap-2.5 p-3 rounded-2xl bg-slate-800/70 border border-slate-700/80 cursor-pointer hover:border-indigo-500/50 transition">
-              <input type="radio" name="workflowMode" value="log_and_open" class="mt-0.5 accent-indigo-500" checked />
-              <div>
-                <span class="font-bold text-white block">1. Catat Log & Langsung Buka Web Kantor (Direkomendasikan)</span>
-                <span class="text-[11px] text-slate-400 leading-relaxed block mt-0.5">Saat klik <b>Catat Masuk/Pulang</b>, waktu langsung dicatat permanen lalu tab web absen kantor otomatis terbuka untuk scan wajah.</span>
-              </div>
-            </label>
+      <div class="field">
+        <label>Alur Tombol Catat</label>
+        <div class="option-list">
+          <label class="option-item">
+            <input type="radio" name="workflowMode" value="log_and_open" checked />
+            <div>
+              <span class="option-title">Catat dulu, lalu buka web kantor</span>
+              <span class="option-desc">Jam langsung tersimpan, kemudian tab web absen kantor terbuka otomatis.</span>
+            </div>
+          </label>
 
-            <label class="flex items-start gap-2.5 p-3 rounded-2xl bg-slate-800/70 border border-slate-700/80 cursor-pointer hover:border-indigo-500/50 transition">
-              <input type="radio" name="workflowMode" value="open_then_confirm" class="mt-0.5 accent-indigo-500" />
-              <div>
-                <span class="font-bold text-white block">2. Buka Web Kantor Dulu, Konfirmasi Setelah Scan</span>
-                <span class="text-[11px] text-slate-400 leading-relaxed block mt-0.5">Membuka web absen kantor lebih dulu. Begitu Anda kembali ke aplikasi ini setelah scan wajah, muncul tombol konfirmasi 1-ketuk.</span>
-              </div>
-            </label>
+          <label class="option-item">
+            <input type="radio" name="workflowMode" value="open_then_confirm" />
+            <div>
+              <span class="option-title">Buka web dulu, simpan saat kembali</span>
+              <span class="option-desc">Buka portal kantor dulu. Saat balik ke sini setelah scan, muncul tombol simpan.</span>
+            </div>
+          </label>
 
-            <label class="flex items-start gap-2.5 p-3 rounded-2xl bg-slate-800/70 border border-slate-700/80 cursor-pointer hover:border-indigo-500/50 transition">
-              <input type="radio" name="workflowMode" value="separate_shortcut" class="mt-0.5 accent-indigo-500" />
-              <div>
-                <span class="font-bold text-white block">3. Shortcut Terpisah di Atas Widget</span>
-                <span class="text-[11px] text-slate-400 leading-relaxed block mt-0.5">Tombol Catat Masuk/Pulang hanya menyimpan log lokal, sementara web kantor dibuka lewat tombol shortcut khusus di atas widget.</span>
-              </div>
-            </label>
-          </div>
+          <label class="option-item">
+            <input type="radio" name="workflowMode" value="separate_shortcut" />
+            <div>
+              <span class="option-title">Shortcut terpisah</span>
+              <span class="option-desc">Tombol Catat hanya simpan log; web kantor dibuka dari tombol Buka Web di atas.</span>
+            </div>
+          </label>
         </div>
       </div>
 
-      <div class="flex gap-2 pt-2">
-        <button onclick="clearPortalSettings()" class="py-2.5 px-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 font-semibold text-xs hover:bg-rose-500/20">
-          Reset URL
-        </button>
-        <button onclick="savePortalSettings()" class="flex-1 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-xs shadow-lg shadow-indigo-500/20 btn-press">
-          Simpan Pengaturan
-        </button>
+      <div class="sheet-actions">
+        <button class="ios-btn danger" onclick="clearPortalSettings()">Hapus</button>
+        <button class="ios-btn primary" onclick="savePortalSettings()">Simpan</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL EDIT JAM ABSEN -->
-  <div id="editModal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md p-5 space-y-4">
-      <div class="flex items-center justify-between">
-        <h3 id="editModalTitle" class="text-base font-bold text-white">Ubah Waktu Absen</h3>
-        <button onclick="closeModal('editModal')" class="text-slate-400 hover:text-white p-1">✕</button>
+  <!-- MODAL: EDIT JAM -->
+  <div id="editModal" class="sheet-backdrop hidden" onclick="backdropClose(event, 'editModal')">
+    <div class="sheet">
+      <div class="grabber"></div>
+      <div class="sheet-head">
+        <span class="sheet-title" id="editModalTitle">Ubah Jam</span>
+        <button class="close-circle" onclick="closeModal('editModal')">×</button>
       </div>
       <input type="hidden" id="editDateKey" />
       <input type="hidden" id="editType" />
-      <div class="space-y-3">
-        <div>
-          <label class="block text-xs font-medium text-slate-400 mb-1">Jam (HH:MM:SS)</label>
-          <input type="time" step="1" id="editTimeInput" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white font-mono" />
-        </div>
-        <div>
-          <label class="block text-xs font-medium text-slate-400 mb-1">Catatan</label>
-          <input type="text" id="editNoteInput" placeholder="Keterangan tambahan..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white" />
-        </div>
+
+      <div class="field">
+        <label>Jam</label>
+        <input type="time" step="1" id="editTimeInput" class="nums" />
       </div>
-      <div class="flex gap-2 pt-2">
-        <button onclick="deleteSpecificPunch()" class="flex-1 py-2.5 rounded-xl bg-rose-500/15 text-rose-400 border border-rose-500/30 font-semibold text-xs">Hapus Jam Ini</button>
-        <button onclick="saveEditedTime()" class="flex-1 py-2.5 rounded-xl bg-indigo-500 text-white font-bold text-xs">Simpan Perubahan</button>
+
+      <div class="field">
+        <label>Catatan</label>
+        <input type="text" id="editNoteInput" placeholder="Keterangan tambahan..." />
+      </div>
+
+      <div class="sheet-actions">
+        <button class="ios-btn danger" onclick="deleteSpecificPunch()">Hapus Jam</button>
+        <button class="ios-btn primary" onclick="saveEditedTime()">Simpan</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL TAMBAH LOG MANUAL -->
-  <div id="manualAddModal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md p-5 space-y-4">
-      <div class="flex items-center justify-between">
-        <h3 class="text-base font-bold text-white">Tambah Log Susulan</h3>
-        <button onclick="closeModal('manualAddModal')" class="text-slate-400 hover:text-white p-1">✕</button>
+  <!-- MODAL: TAMBAH MANUAL -->
+  <div id="manualAddModal" class="sheet-backdrop hidden" onclick="backdropClose(event, 'manualAddModal')">
+    <div class="sheet">
+      <div class="grabber"></div>
+      <div class="sheet-head">
+        <span class="sheet-title">Tambah Catatan Manual</span>
+        <button class="close-circle" onclick="closeModal('manualAddModal')">×</button>
       </div>
-      <div class="space-y-3">
-        <div>
-          <label class="block text-xs font-medium text-slate-400 mb-1">Tanggal</label>
-          <input type="date" id="manualDate" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white" />
+
+      <div class="field">
+        <label>Tanggal</label>
+        <input type="date" id="manualDate" />
+      </div>
+
+      <div class="tiles" style="margin-bottom: 0;">
+        <div class="field">
+          <label>Masuk</label>
+          <input type="time" step="1" id="manualIn" class="nums" />
         </div>
-        <div class="grid grid-cols-2 gap-2.5">
-          <div>
-            <label class="block text-xs font-medium text-slate-400 mb-1">Jam Check-In</label>
-            <input type="time" step="1" id="manualIn" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono" />
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-400 mb-1">Jam Check-Out</label>
-            <input type="time" step="1" id="manualOut" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono" />
-          </div>
-        </div>
-        <div>
-          <label class="block text-xs font-medium text-slate-400 mb-1">Catatan</label>
-          <input type="text" id="manualNote" placeholder="Contoh: Lupa klik catat tapi sudah scan wajah" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white" />
+        <div class="field">
+          <label>Pulang</label>
+          <input type="time" step="1" id="manualOut" class="nums" />
         </div>
       </div>
-      <button onclick="saveManualLog()" class="w-full py-3 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-xs">Simpan Log Permanen</button>
+
+      <div class="field">
+        <label>Catatan</label>
+        <input type="text" id="manualNote" placeholder="Misal: Sudah scan wajah tapi lupa catat" />
+      </div>
+
+      <button class="ios-btn primary" onclick="saveManualLog()">Simpan Catatan</button>
     </div>
   </div>
 
-  <!-- MODAL CARA PASANG WIDGET DI ANDROID -->
-  <div id="installModal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md p-5 space-y-4">
-      <div class="flex items-center justify-between">
-        <h3 class="text-base font-bold text-white">Pasang di Layar Utama Android</h3>
-        <button onclick="closeModal('installModal')" class="text-slate-400 hover:text-white p-1">✕</button>
+  <!-- MODAL: PASANG DI HP -->
+  <div id="installModal" class="sheet-backdrop hidden" onclick="backdropClose(event, 'installModal')">
+    <div class="sheet">
+      <div class="grabber"></div>
+      <div class="sheet-head">
+        <span class="sheet-title">Pasang di Layar Utama</span>
+        <button class="close-circle" onclick="closeModal('installModal')">×</button>
       </div>
-      <div class="space-y-3 text-xs text-slate-300 leading-relaxed">
-        <div class="p-3 rounded-2xl bg-slate-800/80 border border-slate-700/70 space-y-2">
-          <p class="font-bold text-indigo-300">Langkah di Google Chrome Android:</p>
-          <ol class="list-decimal list-inside space-y-1.5 text-slate-300">
-            <li>Ketuk ikon <b>titik tiga (⋮)</b> di pojok kanan atas browser Chrome.</li>
-            <li>Pilih menu <b>"Tambahkan ke Layar utama"</b> (<i>Add to Home screen</i>) atau <b>"Instal aplikasi"</b>.</li>
-            <li>Beri nama <b>Cek Absen</b> lalu ketuk <b>Tambahkan</b>.</li>
-            <li>Taruh ikonnya tepat di samping ikon browser absen kantor Anda agar selalu terlihat setiap buka HP!</li>
-          </ol>
-        </div>
-        <p class="text-[11px] text-slate-400">
-          *Data disimpan menggunakan <b>Persistent LocalStorage</b> browser HP Anda. Selama cache situs tidak dihapus manual, log akan tersimpan selamanya.
-        </p>
-      </div>
-      <button onclick="closeModal('installModal')" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs">Mengerti</button>
-    </div>
-  </div>
-
-  <!-- MODAL BACKUP & RESTORE -->
-  <div id="backupModal" class="fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md p-5 space-y-4">
-      <div class="flex items-center justify-between">
-        <h3 class="text-base font-bold text-white">Cadangkan & Pulihkan Data</h3>
-        <button onclick="closeModal('backupModal')" class="text-slate-400 hover:text-white p-1">✕</button>
-      </div>
-      <p class="text-xs text-slate-400 leading-relaxed">
-        Ekspor log absensi ke file JSON atau CSV (Excel) sebagai bukti cadangan permanen jika sewaktu-waktu Anda ganti HP.
+      <p class="hint-text" style="font-size: 13px; color: var(--text);">
+        1. Buka halaman ini di <strong>Google Chrome</strong> HP.<br>
+        2. Ketuk ikon <strong>titik tiga (⋮)</strong> di pojok kanan atas.<br>
+        3. Pilih <strong>Tambahkan ke Layar utama</strong> (<em>Add to Home screen</em>).<br>
+        4. Letakkan ikonnya di halaman depan HP agar selalu terlihat.
       </p>
-      <div class="grid grid-cols-2 gap-2.5">
-        <button onclick="exportJSON()" class="py-3 px-3 rounded-xl bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 font-bold text-xs hover:bg-indigo-500/30">
-          Ekspor Cadangan (.JSON)
-        </button>
-        <button onclick="exportCSV()" class="py-3 px-3 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold text-xs hover:bg-emerald-500/30">
-          Unduh Laporan (.CSV)
-        </button>
+      <p class="hint-text">
+        Log tersimpan di penyimpanan lokal browser HP Anda dan tidak hilang saat HP di-restart. Jangan hapus Site Data Chrome untuk situs ini.
+      </p>
+      <button class="ios-btn primary" onclick="closeModal('installModal')">Selesai</button>
+    </div>
+  </div>
+
+  <!-- MODAL: BACKUP -->
+  <div id="backupModal" class="sheet-backdrop hidden" onclick="backdropClose(event, 'backupModal')">
+    <div class="sheet">
+      <div class="grabber"></div>
+      <div class="sheet-head">
+        <span class="sheet-title">Backup &amp; Restore</span>
+        <button class="close-circle" onclick="closeModal('backupModal')">×</button>
       </div>
-      <div class="pt-2 border-t border-slate-800">
-        <label class="block text-xs font-semibold text-slate-300 mb-2">Pulihkan dari File Cadangan (.JSON)</label>
-        <input type="file" id="importFileInput" accept=".json" onchange="importJSON(event)" class="block w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700" />
+      <p class="hint-text">
+        Simpan cadangan file ke memori HP supaya data tetap aman jika suatu saat ganti perangkat.
+      </p>
+      <div class="sheet-actions">
+        <button class="ios-btn secondary" style="flex:1" onclick="exportJSON()">Backup (.JSON)</button>
+        <button class="ios-btn secondary" style="flex:1" onclick="exportCSV()">Laporan (.CSV)</button>
+      </div>
+      <div class="field" style="border-top: 0.5px solid var(--glass-hairline); padding-top: 12px;">
+        <label>Pulihkan dari file .JSON</label>
+        <input type="file" id="importFileInput" accept=".json" onchange="importJSON(event)" style="font-size: 12.5px;" />
       </div>
     </div>
   </div>
@@ -494,14 +1199,51 @@
   <script>
     const STORAGE_KEY = 'cek_absenku_permanent_logs_v1';
     const SETTINGS_KEY = 'cek_absenku_portal_settings_v1';
+    const THEME_KEY = 'cek_absenku_theme_v1';
 
     let pendingPortalAction = null;
 
     const HARI_ID = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-    const BULAN_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    const BULAN_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
     if (navigator.storage && navigator.storage.persist) {
       navigator.storage.persist().catch(() => {});
+    }
+
+    function applyTheme(theme) {
+      const root = document.documentElement;
+      const meta = document.getElementById('metaThemeColor');
+      const icon = document.getElementById('themeIcon');
+      if (theme === 'dark') {
+        root.setAttribute('data-theme', 'dark');
+        if (meta) meta.setAttribute('content', '#0d1520');
+        if (icon) {
+          icon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+        }
+      } else {
+        root.removeAttribute('data-theme');
+        if (meta) meta.setAttribute('content', '#dbe7f3');
+        if (icon) {
+          icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+        }
+      }
+    }
+
+    function initTheme() {
+      let saved = null;
+      try { saved = localStorage.getItem(THEME_KEY); } catch (e) {}
+      if (saved === 'dark' || saved === 'light') {
+        applyTheme(saved);
+      } else {
+        applyTheme('light');
+      }
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const next = isDark ? 'light' : 'dark';
+      try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+      applyTheme(next);
     }
 
     function getLogs() {
@@ -560,17 +1302,14 @@
       return `${HARI_ID[dt.getDay()]}, ${d} ${BULAN_ID[m - 1]} ${y}`;
     }
 
-    function showToast(msg, color = 'emerald') {
+    function showToast(msg) {
       const toast = document.getElementById('toast');
-      const dot = document.getElementById('toastDot');
-      const text = document.getElementById('toastMessage');
-      text.textContent = msg;
-      dot.className = `w-2 h-2 rounded-full ${color === 'amber' ? 'bg-amber-400' : color === 'sky' ? 'bg-sky-400' : color === 'indigo' ? 'bg-indigo-400' : 'bg-emerald-400'}`;
-      toast.classList.remove('opacity-0', 'translate-y-3');
+      toast.textContent = msg;
+      toast.classList.add('show');
       clearTimeout(window._toastTimer);
       window._toastTimer = setTimeout(() => {
-        toast.classList.add('opacity-0', 'translate-y-3');
-      }, 2800);
+        toast.classList.remove('show');
+      }, 2400);
     }
 
     function updateClock() {
@@ -590,24 +1329,24 @@
       if (settings.portalUrl && settings.portalUrl.trim() !== '') {
         shortcutBar.classList.remove('hidden');
         settingsDot.classList.remove('hidden');
-        document.getElementById('portalLabelDisplay').textContent = settings.portalName || 'Portal Absen Kantor';
+        document.getElementById('portalLabelDisplay').textContent = settings.portalName || 'Web Absen Kantor';
         document.getElementById('portalUrlDisplay').textContent = settings.portalUrl;
 
         if (settings.workflowMode === 'log_and_open') {
-          btnInSub.textContent = 'Catat & Buka Web Kantor';
-          btnOutSub.textContent = 'Catat & Buka Web Kantor';
+          btnInSub.textContent = 'Simpan & buka web';
+          btnOutSub.textContent = 'Simpan & buka web';
         } else if (settings.workflowMode === 'open_then_confirm') {
-          btnInSub.textContent = 'Buka Web → Konfirmasi';
-          btnOutSub.textContent = 'Buka Web → Konfirmasi';
+          btnInSub.textContent = 'Buka web dulu';
+          btnOutSub.textContent = 'Buka web dulu';
         } else {
-          btnInSub.textContent = 'Simpan Log Lokal';
-          btnOutSub.textContent = 'Simpan Log Lokal';
+          btnInSub.textContent = 'Simpan jam sekarang';
+          btnOutSub.textContent = 'Simpan jam sekarang';
         }
       } else {
         shortcutBar.classList.add('hidden');
         settingsDot.classList.add('hidden');
-        btnInSub.textContent = 'Simpan Log Sekarang';
-        btnOutSub.textContent = 'Simpan Log Sekarang';
+        btnInSub.textContent = 'Simpan jam sekarang';
+        btnOutSub.textContent = 'Simpan jam sekarang';
       }
     }
 
@@ -642,7 +1381,7 @@
       const suggestedType = !todayLog.checkIn ? 'in' : (!todayLog.checkOut ? 'out' : null);
 
       launchPortalUrl(settings.portalUrl, suggestedType);
-      showToast('Membuka web absen kantor...', 'indigo');
+      showToast('Membuka web kantor...');
     }
 
     function handleAttendanceAction(type) {
@@ -659,14 +1398,14 @@
         if (saved) {
           setTimeout(() => {
             launchPortalUrl(settings.portalUrl, null);
-          }, 350);
+          }, 300);
         }
         return;
       }
 
       if (settings.workflowMode === 'open_then_confirm') {
         launchPortalUrl(settings.portalUrl, type);
-        showToast('Membuka web absen kantor. Kembali ke sini setelah scan wajah.', 'indigo');
+        showToast('Membuka web kantor...');
       }
     }
 
@@ -695,13 +1434,13 @@
 
       banner.dataset.pendingType = type;
       if (type === 'in') {
-        title.textContent = 'Baru selesai Check-In di web kantor?';
-        desc.textContent = 'Klik tombol di bawah untuk mencatat jam Check-In sekarang.';
-        btn.textContent = 'Ya, Catat Check-In Sekarang';
+        title.textContent = 'Selesai scan masuk di web kantor?';
+        desc.textContent = 'Ketuk untuk menyimpan jam masuk sekarang.';
+        btn.textContent = 'Catat Masuk';
       } else {
-        title.textContent = 'Baru selesai Check-Out di web kantor?';
-        desc.textContent = 'Klik tombol di bawah untuk mencatat jam Check-Out sekarang.';
-        btn.textContent = 'Ya, Catat Check-Out Sekarang';
+        title.textContent = 'Selesai scan pulang di web kantor?';
+        desc.textContent = 'Ketuk untuk menyimpan jam pulang sekarang.';
+        btn.textContent = 'Catat Pulang';
       }
       banner.classList.remove('hidden');
     }
@@ -736,20 +1475,20 @@
 
       if (type === 'in') {
         if (logs[todayKey].checkIn) {
-          if (!confirm(`Anda sudah Check-In jam ${logs[todayKey].checkIn}. Timpa dengan jam ${nowTime}?`)) return false;
+          if (!confirm(`Jam masuk hari ini sudah tercatat (${logs[todayKey].checkIn.slice(0, 5)}). Ganti jadi ${nowTime.slice(0, 5)}?`)) return false;
         }
         logs[todayKey].checkIn = nowTime;
         if (noteText) logs[todayKey].note = noteText;
-        showToast(`Check-In tercatat jam ${nowTime}`, 'emerald');
+        showToast(`Masuk dicatat · ${nowTime.slice(0, 5)}`);
       } else {
         if (logs[todayKey].checkOut) {
-          if (!confirm(`Anda sudah Check-Out jam ${logs[todayKey].checkOut}. Timpa dengan jam ${nowTime}?`)) return false;
+          if (!confirm(`Jam pulang hari ini sudah tercatat (${logs[todayKey].checkOut.slice(0, 5)}). Ganti jadi ${nowTime.slice(0, 5)}?`)) return false;
         }
         logs[todayKey].checkOut = nowTime;
         if (noteText) {
-          logs[todayKey].note = logs[todayKey].note ? `${logs[todayKey].note} • ${noteText}` : noteText;
+          logs[todayKey].note = logs[todayKey].note ? `${logs[todayKey].note} · ${noteText}` : noteText;
         }
-        showToast(`Check-Out tercatat jam ${nowTime}`, 'sky');
+        showToast(`Pulang dicatat · ${nowTime.slice(0, 5)}`);
       }
 
       noteInput.value = '';
@@ -763,84 +1502,58 @@
       const todayLog = logs[todayKey];
 
       const banner = document.getElementById('statusBanner');
-      const iconWrap = document.getElementById('statusIconWrapper');
-      const pulse = document.getElementById('statusPulse');
       const icon = document.getElementById('statusIcon');
-      const badge = document.getElementById('statusBadge');
       const headline = document.getElementById('statusHeadline');
       const subtext = document.getElementById('statusSubtext');
-      const glow = document.getElementById('widgetGlow');
 
       const inTimeEl = document.getElementById('todayInTime');
       const outTimeEl = document.getElementById('todayOutTime');
-      const inDot = document.getElementById('inCheckIcon');
-      const outDot = document.getElementById('outCheckIcon');
       const editInBtn = document.getElementById('editInBtn');
       const editOutBtn = document.getElementById('editOutBtn');
 
       if (todayLog && todayLog.checkIn) {
         inTimeEl.textContent = todayLog.checkIn.slice(0, 5);
-        inTimeEl.className = 'font-mono text-lg font-bold text-emerald-400';
-        inDot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+        inTimeEl.className = 'tile-time nums has-in';
         editInBtn.classList.remove('hidden');
       } else {
         inTimeEl.textContent = '--:--';
-        inTimeEl.className = 'font-mono text-lg font-bold text-slate-500';
-        inDot.className = 'w-2 h-2 rounded-full bg-slate-600';
+        inTimeEl.className = 'tile-time nums';
         editInBtn.classList.add('hidden');
       }
 
       if (todayLog && todayLog.checkOut) {
         outTimeEl.textContent = todayLog.checkOut.slice(0, 5);
-        outTimeEl.className = 'font-mono text-lg font-bold text-sky-400';
-        outDot.className = 'w-2 h-2 rounded-full bg-sky-400';
+        outTimeEl.className = 'tile-time nums has-out';
         editOutBtn.classList.remove('hidden');
       } else {
         outTimeEl.textContent = '--:--';
-        outTimeEl.className = 'font-mono text-lg font-bold text-slate-500';
-        outDot.className = 'w-2 h-2 rounded-full bg-slate-600';
+        outTimeEl.className = 'tile-time nums';
         editOutBtn.classList.add('hidden');
       }
 
+      const warnSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
+      const checkSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
       if (!todayLog || (!todayLog.checkIn && !todayLog.checkOut)) {
-        banner.className = 'rounded-2xl p-4 mb-4 border transition-all duration-300 bg-amber-500/10 border-amber-500/30';
-        iconWrap.className = 'relative w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 bg-amber-500/20 text-amber-400';
-        pulse.classList.remove('hidden');
-        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />';
-        badge.className = 'text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300';
-        badge.textContent = 'BELUM ABSEN';
-        headline.textContent = 'Belum ada Check-In hari ini';
-        subtext.textContent = 'Segera klik Catat Masuk setelah scan wajah';
-        glow.className = 'absolute -top-16 -right-16 w-44 h-44 rounded-full bg-amber-500/15 blur-3xl pointer-events-none';
+        banner.className = 'status-strip';
+        icon.innerHTML = warnSvg;
+        headline.textContent = 'Belum absen masuk';
+        subtext.textContent = 'Catat setelah scan wajah di browser';
       } else if (todayLog.checkIn && !todayLog.checkOut) {
-        banner.className = 'rounded-2xl p-4 mb-4 border transition-all duration-300 bg-emerald-500/10 border-emerald-500/30';
-        iconWrap.className = 'relative w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 bg-emerald-500/20 text-emerald-400';
-        pulse.classList.add('hidden');
-        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />';
-        badge.className = 'text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300';
-        badge.textContent = 'SUDAH CHECK-IN';
-        headline.textContent = `Masuk tercatat pukul ${todayLog.checkIn.slice(0, 5)}`;
-        subtext.textContent = 'Jangan lupa catat Check-Out saat pulang nanti';
-        glow.className = 'absolute -top-16 -right-16 w-44 h-44 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none';
+        banner.className = 'status-strip in';
+        icon.innerHTML = checkSvg;
+        headline.textContent = `Sudah masuk pukul ${todayLog.checkIn.slice(0, 5)}`;
+        subtext.textContent = 'Jangan lupa catat pulang nanti sore';
       } else if (todayLog.checkIn && todayLog.checkOut) {
-        banner.className = 'rounded-2xl p-4 mb-4 border transition-all duration-300 bg-sky-500/10 border-sky-500/30';
-        iconWrap.className = 'relative w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 bg-sky-500/20 text-sky-400';
-        pulse.classList.add('hidden');
-        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />';
-        badge.className = 'text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300';
-        badge.textContent = 'ABSEN HARI INI LENGKAP';
-        headline.textContent = `In ${todayLog.checkIn.slice(0, 5)} • Out ${todayLog.checkOut.slice(0, 5)}`;
-        subtext.textContent = 'Aman! Log masuk & pulang sudah tersimpan permanen';
-        glow.className = 'absolute -top-16 -right-16 w-44 h-44 rounded-full bg-sky-500/15 blur-3xl pointer-events-none';
+        banner.className = 'status-strip done';
+        icon.innerHTML = checkSvg;
+        headline.textContent = `Lengkap (${todayLog.checkIn.slice(0, 5)} – ${todayLog.checkOut.slice(0, 5)})`;
+        subtext.textContent = 'Absen masuk & pulang hari ini aman';
       } else {
-        banner.className = 'rounded-2xl p-4 mb-4 border transition-all duration-300 bg-indigo-500/10 border-indigo-500/30';
-        iconWrap.className = 'relative w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 bg-indigo-500/20 text-indigo-400';
-        pulse.classList.add('hidden');
-        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />';
-        badge.className = 'text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300';
-        badge.textContent = 'CHECK-IN KOSONG';
-        headline.textContent = `Check-Out pukul ${todayLog.checkOut.slice(0, 5)} (In belum dicatat)`;
-        subtext.textContent = 'Klik Catat Masuk atau Ubah jika tadi sudah Check-In';
+        banner.className = 'status-strip';
+        icon.innerHTML = warnSvg;
+        headline.textContent = `Pulang ${todayLog.checkOut.slice(0, 5)} · Masuk belum dicatat`;
+        subtext.textContent = 'Klik Catat Masuk jika tadi sudah absen';
       }
     }
 
@@ -874,12 +1587,7 @@
         .sort((a, b) => b.localeCompare(a));
 
       if (sortedKeys.length === 0) {
-        container.innerHTML = `
-          <div class="text-center py-8 px-4 rounded-2xl bg-slate-900/50 border border-dashed border-slate-800">
-            <p class="text-xs font-semibold text-slate-400">Belum ada catatan absensi pada periode ini.</p>
-            <p class="text-[11px] text-slate-500 mt-1">Setiap kali Anda mencatat absen, riwayat akan terkunci permanen di sini.</p>
-          </div>
-        `;
+        container.innerHTML = '<div class="empty-box">Belum ada catatan pada bulan ini.</div>';
         return;
       }
 
@@ -889,29 +1597,24 @@
         const isComplete = item.checkIn && item.checkOut;
 
         return `
-          <div class="rounded-2xl bg-slate-900/90 border ${isToday ? 'border-indigo-500/40' : 'border-slate-800'} p-3.5 transition">
-            <div class="flex items-center justify-between gap-2 mb-2">
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-bold text-white">${formatDisplayDate(dateKey)}</span>
-                ${isToday ? '<span class="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300">Hari Ini</span>' : ''}
-              </div>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isComplete ? 'bg-emerald-500/15 text-emerald-400' : 'bg-amber-500/15 text-amber-300'}">
-                ${isComplete ? 'Lengkap' : 'Belum Lengkap'}
-              </span>
+          <div class="log-row">
+            <div class="log-row-top">
+              <span class="log-date">${formatDisplayDate(dateKey)}${isToday ? ' · Hari ini' : ''}</span>
+              <span class="log-badge ${isComplete ? 'ok' : ''}">${isComplete ? 'Lengkap' : 'Belum lengkap'}</span>
             </div>
 
-            <div class="grid grid-cols-2 gap-2 text-xs">
-              <div onclick="openEditModalForDate('${dateKey}', 'in')" class="cursor-pointer rounded-xl bg-slate-950/70 hover:bg-slate-800/80 px-3 py-2 flex items-center justify-between border border-slate-800/80">
-                <span class="text-slate-400 text-[11px]">Masuk</span>
-                <span class="font-mono font-bold ${item.checkIn ? 'text-emerald-400' : 'text-slate-600'}">${item.checkIn ? item.checkIn.slice(0, 5) : '--:--'}</span>
+            <div class="log-pair">
+              <div class="log-chip" onclick="openEditModalForDate('${dateKey}', 'in')">
+                <span>Masuk</span>
+                <strong class="nums">${item.checkIn ? item.checkIn.slice(0, 5) : '--:--'}</strong>
               </div>
-              <div onclick="openEditModalForDate('${dateKey}', 'out')" class="cursor-pointer rounded-xl bg-slate-950/70 hover:bg-slate-800/80 px-3 py-2 flex items-center justify-between border border-slate-800/80">
-                <span class="text-slate-400 text-[11px]">Pulang</span>
-                <span class="font-mono font-bold ${item.checkOut ? 'text-sky-400' : 'text-slate-600'}">${item.checkOut ? item.checkOut.slice(0, 5) : '--:--'}</span>
+              <div class="log-chip" onclick="openEditModalForDate('${dateKey}', 'out')">
+                <span>Pulang</span>
+                <strong class="nums">${item.checkOut ? item.checkOut.slice(0, 5) : '--:--'}</strong>
               </div>
             </div>
 
-            ${item.note ? `<p class="mt-2 text-[11px] text-slate-400 bg-slate-950/50 rounded-lg px-2.5 py-1.5 border border-slate-800/50">📝 ${escapeHtml(item.note)}</p>` : ''}
+            ${item.note ? `<div class="log-note">${escapeHtml(item.note)}</div>` : ''}
           </div>
         `;
       }).join('');
@@ -924,6 +1627,12 @@
     function resetFilter() {
       document.getElementById('filterMonth').value = '';
       renderLogs();
+    }
+
+    function backdropClose(event, id) {
+      if (event.target.id === id) {
+        closeModal(id);
+      }
     }
 
     function openSettingsModal() {
@@ -951,7 +1660,7 @@
       });
 
       closeModal('settingsModal');
-      showToast(normalized ? 'Pengaturan web absen disimpan' : 'URL web absen dikosongkan', 'indigo');
+      showToast(normalized ? 'Pengaturan disimpan' : 'URL web dikosongkan');
     }
 
     function clearPortalSettings() {
@@ -963,7 +1672,7 @@
         workflowMode: 'log_and_open'
       });
       closeModal('settingsModal');
-      showToast('Integrasi web kantor direset', 'amber');
+      showToast('URL web dihapus');
     }
 
     function openEditModal(type) {
@@ -975,7 +1684,7 @@
       const item = logs[dateKey] || { date: dateKey, checkIn: '', checkOut: '', note: '' };
       document.getElementById('editDateKey').value = dateKey;
       document.getElementById('editType').value = type;
-      document.getElementById('editModalTitle').textContent = `Ubah ${type === 'in' ? 'Check-In' : 'Check-Out'} (${dateKey})`;
+      document.getElementById('editModalTitle').textContent = `Ubah Jam ${type === 'in' ? 'Masuk' : 'Pulang'}`;
       document.getElementById('editTimeInput').value = type === 'in' ? (item.checkIn || '08:00:00') : (item.checkOut || '17:00:00');
       document.getElementById('editNoteInput').value = item.note || '';
       document.getElementById('editModal').classList.remove('hidden');
@@ -999,7 +1708,7 @@
 
       saveLogs(logs);
       closeModal('editModal');
-      showToast('Perubahan waktu disimpan');
+      showToast('Jam diperbarui');
     }
 
     function deleteSpecificPunch() {
@@ -1015,7 +1724,7 @@
         saveLogs(logs);
       }
       closeModal('editModal');
-      showToast('Data jam dihapus', 'amber');
+      showToast('Jam dihapus');
     }
 
     function openManualAddModal() {
@@ -1033,7 +1742,7 @@
       const noteVal = document.getElementById('manualNote').value.trim();
 
       if (!dateKey) return alert('Tanggal wajib diisi');
-      if (!inVal && !outVal) return alert('Isi minimal jam Check-In atau Check-Out');
+      if (!inVal && !outVal) return alert('Isi minimal jam masuk atau pulang');
 
       if (inVal && inVal.length === 5) inVal += ':00';
       if (outVal && outVal.length === 5) outVal += ':00';
@@ -1047,7 +1756,7 @@
       };
       saveLogs(logs);
       closeModal('manualAddModal');
-      showToast(`Log ${dateKey} berhasil ditambahkan`);
+      showToast('Catatan ditambahkan');
     }
 
     function openInstallModal() {
@@ -1071,21 +1780,21 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `backup-cek-absenku-${getLocalDateKey()}.json`;
+      a.download = `backup-absen-${getLocalDateKey()}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      showToast('File backup JSON diunduh');
+      showToast('Backup JSON diunduh');
     }
 
     function exportCSV() {
       const logs = getLogs();
       const keys = Object.keys(logs).sort();
-      const rows = ['Tanggal,Hari,Check-In,Check-Out,Status,Catatan'];
+      const rows = ['Tanggal,Hari,Masuk,Pulang,Status,Catatan'];
       keys.forEach(k => {
         const item = logs[k];
         const [y, m, d] = k.split('-').map(Number);
         const dayName = HARI_ID[new Date(y, m - 1, d).getDay()];
-        const status = (item.checkIn && item.checkOut) ? 'Lengkap' : 'Belum Lengkap';
+        const status = (item.checkIn && item.checkOut) ? 'Lengkap' : 'Belum lengkap';
         const safeNote = `"${(item.note || '').replace(/"/g, '""')}"`;
         rows.push(`${k},${dayName},${item.checkIn || '-'},${item.checkOut || '-'},${status},${safeNote}`);
       });
@@ -1094,10 +1803,10 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `laporan-absensi-${getLocalDateKey()}.csv`;
+      a.download = `catatan-absen-${getLocalDateKey()}.csv`;
       a.click();
       URL.revokeObjectURL(url);
-      showToast('Laporan CSV diunduh');
+      showToast('File CSV diunduh');
     }
 
     function importJSON(event) {
@@ -1115,12 +1824,12 @@
               saveSettingsToStorage(parsed.settings);
             }
             closeModal('backupModal');
-            showToast('Data berhasil dipulihkan & digabung');
+            showToast('Data dipulihkan');
           } else {
-            alert('Format file tidak valid');
+            alert('Format file tidak sesuai');
           }
         } catch (err) {
-          alert('Gagal membaca file JSON');
+          alert('File tidak bisa dibaca');
         }
       };
       reader.readAsText(file);
@@ -1132,6 +1841,7 @@
       renderLogs();
     }
 
+    initTheme();
     document.getElementById('filterMonth').value = getLocalDateKey().slice(0, 7);
     updateClock();
     setInterval(updateClock, 1000);
